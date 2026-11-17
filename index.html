@@ -2390,7 +2390,7 @@ var audio = {
     s.connect(bp); bp.connect(g); g.connect(this.master); s.start(t);
     this.blip(150, 0.5, 'sawtooth', 0.045, 0.02);
   },
-  purr: function(){                      /* 강아지 — 짧고 귀여운 "멍멍" */
+  woof: function(){                      /* 강아지 — 짧고 귀여운 "멍멍" */
     if (!this.ctx) return;
     this.blip(430, 0.09, 'triangle', 0.075);
     this.blip(300, 0.13, 'triangle', 0.065, 0.085);
@@ -2556,7 +2556,7 @@ var audio = {
     });
     var peak = 0.0001;
     for (var i2=0;i2<n;i2++){ var a2 = Math.abs(buf[i2] + wet[i2]); if (a2 > peak) peak = a2; }
-    var gain = 0.84 / peak;
+    var gain = 0.72 / peak;
     var bytes = n*2;
     var dv = new DataView(new ArrayBuffer(44 + bytes));
     function wr(off, str){ for (var i=0;i<str.length;i++) dv.setUint8(off+i, str.charCodeAt(i)); }
@@ -2992,7 +2992,7 @@ function petDog(){
   var dog = refs.dog; if (!dog) return;
   var p = new T.Vector3(); dog.getWorldPosition(p);
   A.heartPop(p.x, p.y + 0.80, p.z, 8);
-  audio.purr();
+  audio.woof();
   S.dogPetT = 1.15;
   toast('강아지가 좋아해요 🐾 꼬리를 흔들어요');
 }
