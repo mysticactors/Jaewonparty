@@ -348,7 +348,7 @@
     <div class="hint" id="hint">끌어서 거실을 둘러보세요 · 우체통(사연)·책상 위 노트(방명록)를 눌러보세요</div>
 
     <div class="bottombar">
-      <button class="bbtn" id="btnWrite">📻 라디오 사연 보내기</button>
+      <button class="bbtn" id="btnWrite">💬 재원이에게 궁금한 점</button>
       <button class="bbtn" id="btnBox2">📝 방명록</button>
     </div>
 
@@ -379,7 +379,7 @@
       <div class="sh-body" id="storyList"></div>
       <div class="sh-footwrap">
         <div class="sh-foot" id="boxFoot">첫 번째 방명록을 남겨 보세요 ✍️</div>
-        <button class="linkbtn" id="btnRadioFromBox" type="button">📻 라디오 사연 보내기</button>
+        <button class="linkbtn" id="btnRadioFromBox" type="button">💬 재원이에게 궁금한 점</button>
       </div>
     </section>
 
@@ -387,20 +387,20 @@
     <section class="sheet" id="writeSheet" aria-hidden="true">
       <div class="sh-head">
         <div>
-          <h3>📻 라디오 사연</h3>
-          <div class="sub">재원이에게만 전달 · 채택된 사연은 공개될 수 있어요 · 200자까지</div>
+          <h3>💬 재원이에게 궁금한 점</h3>
+          <div class="sub">재원이에게만 전달 · 채택되면 팬미팅에서 소개될 수 있어요 · 200자까지</div>
         </div>
         <button class="xbtn" data-close="writeSheet" aria-label="닫기">✕</button>
       </div>
       <div class="sh-body">
         <label class="lbl" for="nickInput">닉네임</label>
         <input id="nickInput" maxlength="14" placeholder="겨울밤 26" autocomplete="off">
-        <label class="lbl" for="storyInput">사연</label>
-        <textarea id="storyInput" maxlength="200" placeholder="라디오 코너에서 소개할 사연을 남겨주세요"></textarea>
+        <label class="lbl" for="storyInput">궁금한 점 · 고민</label>
+        <textarea id="storyInput" maxlength="200" placeholder="재원이에게 궁금한 점이나 고민 거리를 편하게 남겨주세요"></textarea>
         <div class="privacy-note">🔒 보내주신 사연은 비공개로 전달되며, 채택된 사연은 팬미팅에서 공개될 수 있어요.</div>
         <div class="composer-row">
           <span class="counter" id="storyCount">0 / 200</span>
-          <button class="send" id="storySend" disabled>사연 보내기</button>
+          <button class="send" id="storySend" disabled>보내기</button>
         </div>
       </div>
       <div class="sh-foot">보낸 사연은 방명록에 공개되지 않아요 · 채택되면 팬미팅에서 소개될 수 있어요</div>
@@ -1153,12 +1153,32 @@ function framedArt(w, h, kind, x, y, z, rotY, parent){
   var clk = new T.Group(); clk.position.set(INX+0.05, 3.50, 0.55); clk.rotation.y = Math.PI/2; room.add(clk);
   var rim = mesh(GEO.cyl(0.33,0.33,0.06,18), M('#6d4c33'), 0, 0, 0, clk); rim.rotation.x = Math.PI/2;
   var face = mesh(GEO.cyl(0.29,0.29,0.02,18), M('#f8efdc'), 0, 0, 0.04, clk); face.rotation.x = Math.PI/2;
-  /* 강아지 귀 2개 — 시계판 위 양옆, 살짝 처진 갈색 귀 */
-  [[-1,-0.42],[1,0.42]].forEach(function(e){
-    var ear = mesh(GEO.sph(0.115, 9), M('#6a452c', {roughness:0.95}), e[0]*0.265, 0.245, 0.015, clk);
-    ear.scale.set(1.0, 1.32, 0.42); ear.rotation.z = -e[0]*0.38;
-    var inr = mesh(GEO.sph(0.068, 8), M('#c98a6a', {roughness:1}), e[0]*0.268, 0.250, 0.048, clk);
-    inr.scale.set(1.0, 1.28, 0.26); inr.rotation.z = -e[0]*0.38;
+  /* 강아지 귀 2개 — 얼굴 양옆(10~8시·2~4시)에서 아래로 축 처져 내려오는 긴 귀 */
+  [[-1],[1]].forEach(function(e){
+    var sgn = e[0];
+    var earGrp = new T.Group();
+    earGrp.position.set(sgn*0.300, 0.120, 0.010); earGrp.rotation.z = sgn*0.10; clk.add(earGrp);
+    var bend = function(g, out){
+      var a = g.attributes.position;
+      for (var i=0;i<a.count;i++){
+        var dy = 0.110 - a.getY(i);
+        a.setX(i, a.getX(i) + sgn*out*dy*dy);
+        a.setZ(i, a.getZ(i)*0.50);
+      }
+      a.needsUpdate = true; g.computeVertexNormals();
+      return g;
+    };
+    /* 바깥귀 — 위에서 아래로 가늘어지며 살짝 바깥으로 둥글게 처지는 한 덩어리 */
+    var prof = [[0.100,0.001],[0.092,0.032],[0.070,0.050],[0.040,0.060],[0.000,0.064],[-0.070,0.063],
+                [-0.150,0.059],[-0.230,0.051],[-0.300,0.038],[-0.345,0.021],[-0.360,0.001]];
+    var earGeo = new T.LatheGeometry(prof.map(function(q){ return new T.Vector2(q[1], q[0]); }), 14);
+    earGrp.add(new T.Mesh(bend(earGeo, 0.34), M('#6a452c', {roughness:0.95})));
+    /* 안쪽 안감 — 옅은 살구색 */
+    var lin = [[0.082,0.001],[0.074,0.022],[0.056,0.034],[0.030,0.041],[0.000,0.044],[-0.070,0.043],
+               [-0.150,0.039],[-0.220,0.031],[-0.268,0.016],[-0.278,0.001]];
+    var linGeo = new T.LatheGeometry(lin.map(function(q){ return new T.Vector2(q[1], q[0]); }), 12);
+    var inr = new T.Mesh(bend(linGeo, 0.34), M('#c98a6a', {roughness:1}));
+    inr.position.z = 0.022; earGrp.add(inr);
   });
   /* 눈 2개 · 코 · 불홍 볼 2개 */
   mesh(GEO.sph(0.031, 8), M('#3a2c22'), -0.118, 0.078, 0.058, clk).scale.set(1, 1.12, 0.55);
@@ -3571,7 +3591,7 @@ storySend.addEventListener('click', function(){
   var text = storyInput.value.trim().slice(0, STORY_MAX);
   if (!text) return;
   var nick = (nickInput.value.trim() || nickInput.placeholder || '손님').slice(0, 14);
-  var rec = { type:'story', id: uid(), nick: nick, tag: '라디오에 소개', text: text, at: new Date().toISOString() };
+  var rec = { type:'story', id: uid(), nick: nick, tag: '재원이에게 궁금한 점', text: text, at: new Date().toISOString() };
   /* 웹사이트에는 저장도 표시도 하지 않는다 — 구글 시트로만 전달 */
   postRemote(rec, function(){ toast('전송이 막혔어요 · 잠시 후 다시 보내주세요', 2600); });
   store.nick = nick; saveNick();
@@ -3584,7 +3604,7 @@ storySend.addEventListener('click', function(){
     A.burst(mp.clone().add(new T.Vector3(0, 1.3, 0)), ['#ffd08a','#ff9fb2','#fff6dc'], 34, 2.4, 0.16, 1.3, -1.6);
   }
   audio.chime();
-  toast('사연을 잘 보냈어요 📻', 2600);
+  toast('재원이에게 잘 보냈어요 💌', 2600);
 });
 
 /* ══════════ 꾸미기 없는 상호작용 ══════════ */
@@ -3695,7 +3715,7 @@ function toNDC(ev){
 }
 var PICK_LABEL = {
   dog:'🐕 강아지 쓰다듬기', tree:'🎄 트리 불빛', speaker:'📻 음악 켜기',
-  mailbox:'📻 라디오 사연 쓰기', guestbookNote:'📝 방명록 펼치기',
+  mailbox:'💬 재원이에게 궁금한 점 보내기', guestbookNote:'📝 방명록 펼치기',
   pendant:'💡 조명 조절', sofa:'🛋️ 재원이의 소파',
   table:'🎂 파티 테이블', lamp:'💡 스탠드', fireplace:'🔥 벽난로 불 지피기',
   reindeer:'🦌 순록 목방울', tiger:'🐯 호랑이 인형', tv:'📺 TV 채널 바꾸기'
