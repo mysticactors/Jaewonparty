@@ -1740,7 +1740,7 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
   var g = new T.Group(); g.position.set(1.75, 0, 4.35); g.rotation.y = 0.30;
   g.scale.setScalar(1.16); room.add(g);
   refs.mailbox = g;
-  var BODY = '#a8482f', TRIM = '#7c3220';
+  var BODY = '#8f3620', TRIM = '#642614';
   // 기둥
   addBox(g, 0.14, 0.84, 0.14, C.wood3, 0, 0.42, 0);
   addBox(g, 0.44, 0.06, 0.44, C.wood2, 0, 0.03, 0);
@@ -1755,9 +1755,8 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
   lbl.position.set(0, 1.00, 0.256); g.add(lbl);
   // 투입구 + 살짝 꿒아둔 편지
   addBox(g, 0.46, 0.055, 0.02, '#2a1c16', 0, 1.165, 0.256);
-  var env = addBox(g, 0.24, 0.155, 0.012, '#f7ecd8', 0, 1.145, 0.262, {});
-  env.rotation.z = 0.06;
-  addBox(g, 0.24, 0.008, 0.014, '#e2cfb0', 0, 1.150, 0.268);
+  var env = addBox(g, 0.20, 0.130, 0.012, '#f7ecd8', 0, 1.158, 0.258, {});
+  env.rotation.z = 0.04;
   // 깃발
   addBox(g, 0.02, 0.28, 0.02, '#d8a054', 0.395, 1.16, 0);
   addBox(g, 0.16, 0.10, 0.02, '#e2604f', 0.475, 1.26, 0);
@@ -1778,8 +1777,8 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
 /* ══════════ 순록 오브제 — 크리스마스 트리 옆 ══════════ */
 function makeReindeer(){
   var G = new T.Group();
-  var fur   = M('#8b5b34', {roughness:0.92});   /* 따뜻한 밤색 털 */
-  var furD  = M('#6c4325', {roughness:0.94});
+  var fur   = M('#6a4223', {roughness:0.92});   /* 따뜻한 밤색 털 */
+  var furD  = M('#4e2e17', {roughness:0.94});
   var cream = M('#f3e3c8', {roughness:0.90});   /* 배·주둥이 크림 */
   var horn  = M('#efe6d2', {roughness:0.70});   /* 크림색 뿔 */
   var dark  = M('#2b1d16', {roughness:0.50});
@@ -1846,8 +1845,8 @@ function makeReindeer(){
 /* ══════════ 호랑이 오브제 — 러그 앞쪽, 강아지와 균형 ══════════ */
 function makeTiger(){
   var G = new T.Group();
-  var fur   = M('#d98833', {roughness:0.88});   /* 따뜻한 오렌지·골드 털 */
-  var furD  = M('#bd6f26', {roughness:0.90});
+  var fur   = M('#c96f1e', {roughness:0.88});   /* 따뜻한 오렌지·골드 털 */
+  var furD  = M('#a65714', {roughness:0.90});
   var cream = M('#f8ecd6', {roughness:0.90});   /* 볼·배 크림 */
   var stripe= M('#4a2a18', {roughness:0.86});   /* 진한 줄무늬 */
   var dark  = M('#241610', {roughness:0.50});
@@ -1864,10 +1863,12 @@ function makeTiger(){
   /* 뒷다리 옆면 */
   mesh(GEO.sph(0.085, 8), furD, -0.165, 0.115, -0.030, G).scale.set(0.70, 0.90, 0.95);
   mesh(GEO.sph(0.085, 8), furD,  0.165, 0.115, -0.030, G).scale.set(0.70, 0.90, 0.95);
-  /* 몸통 줄무늬 — 몸을 감는 얇은 고리 */
-  [[-0.130, 0.152],[-0.020, 0.196],[0.090, 0.174]].forEach(function(s){
-    var rg = new T.Mesh(new T.TorusGeometry(s[1], 0.012, 5, 14), stripe);
-    rg.position.set(0, 0.190, s[0]); rg.scale.set(1.0, 0.92, 1.0); G.add(rg);
+  /* 몸통 줄무늬 — 옆구리에 짧은 검은 줄 */
+  [-1, 1].forEach(function(sx){
+    [[0.235, -0.085, 0.075, 0.105], [0.190, 0.020, 0.085, 0.100], [0.230, 0.105, 0.065, 0.090]].forEach(function(p, i){
+      var b = mesh(GEO.box(0.030, p[2], p[3]), stripe, sx*0.184, p[0], p[1], G);
+      b.rotation.z = sx*0.16; b.rotation.y = (i-1)*0.18;
+    });
   });
   /* 머리 */
   var head = new T.Group(); head.position.set(0, 0.405, 0.120); G.add(head);
