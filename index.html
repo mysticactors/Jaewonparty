@@ -345,7 +345,7 @@
       <div class="sh-head">
         <div>
           <h3>✎ 사연 남기기</h3>
-          <div class="sub">짧아도 괜찮아요 · 120자까지</div>
+          <div class="sub">짧아도 괜찮아요 · 200자까지</div>
         </div>
         <button class="xbtn" data-close="writeSheet" aria-label="닫기">✕</button>
       </div>
@@ -353,7 +353,7 @@
         <label class="lbl" for="nickInput">닉네임</label>
         <input id="nickInput" maxlength="14" placeholder="겨울밤 26">
         <label class="lbl" for="storyInput">사연</label>
-        <textarea id="storyInput" maxlength="120" placeholder="재원이에게, 혹은 오늘 밤 이야기를 남겨주세요"></textarea>
+        <textarea id="storyInput" maxlength="200" placeholder="재원이에게, 혹은 오늘 밤 이야기를 남겨주세요"></textarea>
         <label class="lbl">어디에 쓰일까요?</label>
         <div class="tagpick" id="tagPick">
           <button class="tagchip on" data-tag="🎧 라디오에 소개">🎧 라디오에 소개</button>
@@ -362,7 +362,7 @@
           <button class="tagchip" data-tag="🌟 응원">🌟 응원</button>
         </div>
         <div class="composer-row">
-          <span class="counter" id="storyCount">0 / 120</span>
+          <span class="counter" id="storyCount">0 / 200</span>
           <button class="send" id="storySend" disabled>사연함에 넣기</button>
         </div>
       </div>
@@ -3014,15 +3014,17 @@ document.querySelectorAll('#tagPick .tagchip').forEach(function(c){
     c.classList.add('on'); pickedTag = c.dataset.tag; audio.click();
   });
 });
+var STORY_MAX = 200;
 function syncMsg(){
+  if (storyInput.value.length > STORY_MAX) storyInput.value = storyInput.value.slice(0, STORY_MAX);
   var v = storyInput.value.trim();
-  storyCount.textContent = v.length + ' / 120';
+  storyCount.textContent = v.length + ' / ' + STORY_MAX;
   storySend.disabled = v.length === 0;
 }
 storyInput.addEventListener('input', syncMsg);
 
 storySend.addEventListener('click', function(){
-  var text = storyInput.value.trim();
+  var text = storyInput.value.trim().slice(0, STORY_MAX);
   if (!text) return;
   var nick = (nickInput.value.trim() || nickInput.placeholder || '손님').slice(0,14);
   var rec = { id: uid(), nick: nick, text: text, tag: pickedTag, at: new Date().toISOString() };
