@@ -434,7 +434,7 @@
           <p class="iv-to">To. <b>아강단</b></p>
           <p class="iv-date">2026 · 12 · 30</p>
           <p class="iv-msg">우리 12월 30일, 광운대학교<br>동해문화예술관에서 만날래?<br><br>기다리고 있을게.</p>
-          <p class="iv-sign">with <em>재원</em></p>
+          <p class="iv-sign">From. <em>재원</em></p>
           <button class="iv-btn" id="btnEnter" type="button">파티룸 들어가기</button>
           <p class="iv-note">🎧 들어가면 캐롤이 함께 흘러요</p>
         </div>
@@ -1149,10 +1149,23 @@ function framedArt(w, h, kind, x, y, z, rotY, parent){
   framedArt(0.62, 0.50, 1, INX+0.01, 3.92, -3.10, Math.PI/2);
   framedArt(0.86, 0.62, 0, INX+0.01, 3.60, 2.70, Math.PI/2);
 
-  /* 왼쪽 벽 시계 */
+  /* 왼쪽 벽 시계 — 강아지 얼굴 벽시계 */
   var clk = new T.Group(); clk.position.set(INX+0.05, 3.50, 0.55); clk.rotation.y = Math.PI/2; room.add(clk);
   var rim = mesh(GEO.cyl(0.33,0.33,0.06,18), M('#6d4c33'), 0, 0, 0, clk); rim.rotation.x = Math.PI/2;
   var face = mesh(GEO.cyl(0.29,0.29,0.02,18), M('#f8efdc'), 0, 0, 0.04, clk); face.rotation.x = Math.PI/2;
+  /* 강아지 귀 2개 — 시계판 위 양옆, 살짝 처진 갈색 귀 */
+  [[-1,-0.42],[1,0.42]].forEach(function(e){
+    var ear = mesh(GEO.sph(0.115, 9), M('#6a452c', {roughness:0.95}), e[0]*0.265, 0.245, 0.015, clk);
+    ear.scale.set(1.0, 1.32, 0.42); ear.rotation.z = -e[0]*0.38;
+    var inr = mesh(GEO.sph(0.068, 8), M('#c98a6a', {roughness:1}), e[0]*0.268, 0.250, 0.048, clk);
+    inr.scale.set(1.0, 1.28, 0.26); inr.rotation.z = -e[0]*0.38;
+  });
+  /* 눈 2개 · 코 · 불홍 볼 2개 */
+  mesh(GEO.sph(0.031, 8), M('#3a2c22'), -0.118, 0.078, 0.058, clk).scale.set(1, 1.12, 0.55);
+  mesh(GEO.sph(0.031, 8), M('#3a2c22'),  0.118, 0.078, 0.058, clk).scale.set(1, 1.12, 0.55);
+  mesh(GEO.sph(0.042, 8), M('#58352a', {roughness:0.7}), 0, -0.098, 0.060, clk).scale.set(1.18, 0.82, 0.68);
+  mesh(GEO.sph(0.050, 8), M('#e79a9a', {roughness:1}), -0.190, -0.030, 0.048, clk).scale.set(1, 0.78, 0.30);
+  mesh(GEO.sph(0.050, 8), M('#e79a9a', {roughness:1}),  0.190, -0.030, 0.048, clk).scale.set(1, 0.78, 0.30);
   /* 7시 정각 — 분침은 12시, 시침은 7시(왼쪽 아래) 방향 */
   var handPivot = function(len, w, thick, ang, col){
     var pv = new T.Group(); pv.position.set(0, 0, 0.062); pv.rotation.z = ang; clk.add(pv);
@@ -1484,7 +1497,7 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
   addBox(g, 0.34, 0.014, 1.78, C.grn, 0, topY+0.038, 0, {roughness:1});
 
   // 케이크
-  var cake = new T.Group(); cake.position.set(-0.34, topY+0.03, 0.02); g.add(cake);
+  var cake = new T.Group(); cake.position.set(-0.30, topY+0.03, 0.00); g.add(cake);
   mesh(GEO.cyl(0.34,0.36,0.20,16), M('#c79063'), 0, 0.10, 0, cake);
   mesh(GEO.cyl(0.34,0.34,0.02,16), M('#f6e9d2'), 0, 0.20, 0, cake);
   mesh(GEO.cyl(0.27,0.31,0.17,16), M('#f0d3b0'), 0, 0.30, 0, cake);
@@ -1505,7 +1518,7 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
   }
 
   // 샴페인 병
-  var btl = new T.Group(); btl.position.set(0.44, topY+0.03, -0.34); g.add(btl);
+  var btl = new T.Group(); btl.position.set(0.52, topY+0.03, -0.28); g.add(btl);
   mesh(GEO.cyl(0.10,0.11,0.36,12), M('#2f4636', {roughness:0.4, metalness:0.15}), 0, 0.18, 0, btl);
   mesh(GEO.cyl(0.055,0.10,0.14,12), M('#2f4636', {roughness:0.4, metalness:0.15}), 0, 0.42, 0, btl);
   mesh(GEO.cyl(0.048,0.05,0.16,10), M('#2f4636', {roughness:0.4, metalness:0.15}), 0, 0.55, 0, btl);
@@ -1516,7 +1529,7 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
   // 샴페인 잔
   var glassMat = new T.MeshStandardMaterial({color:0xd8e6ea, roughness:0.12, metalness:0.10,
     transparent:true, opacity:0.55, flatShading:true});
-  [[0.62,0.30],[0.30,0.62],[-0.10,0.60]].forEach(function(p){
+  [[-0.55,0.55],[0.58,0.58],[0.88,-0.06]].forEach(function(p){
     var gl = new T.Group(); gl.position.set(p[0], topY+0.03, p[1]); g.add(gl);
     mesh(GEO.cyl(0.035,0.045,0.02,10), glassMat, 0, 0.01, 0, gl);
     mesh(GEO.cyl(0.012,0.012,0.14,6), glassMat, 0, 0.09, 0, gl);
@@ -1524,17 +1537,17 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
     mesh(GEO.cyl(0.075,0.075,0.01,12), M('#f5e2b8', {transparent:true, opacity:0.65}), 0, 0.26, 0, gl);
   });
 
-  // 쿠키 접시
-  mesh(GEO.cyl(0.30,0.30,0.025,16), M('#efe4d2'), 0.52, topY+0.05, 0.42, g);
+  // 쿠키 접시 — 노트가 빠진 앞자리로 옮겨 케이크와 간격 확보
+  mesh(GEO.cyl(0.30,0.30,0.025,16), M('#efe4d2'), 0.06, topY+0.05, 0.72, g);
   for (var k=0;k<5;k++){
     var a = k*1.3;
     mesh(GEO.cyl(0.075,0.075,0.03,8), M(k%2?'#c9975c':'#b8834a'),
-      0.52+Math.cos(a)*0.12, topY+0.08, 0.42+Math.sin(a)*0.12, g);
+      0.06+Math.cos(a)*0.12, topY+0.08, 0.72+Math.sin(a)*0.12, g);
   }
-  // 귤 한 그릇
-  var bowl = mesh(GEO.cyl(0.24,0.17,0.14,14), M('#d9c9b0'), -0.62, topY+0.10, 0.26, g);
+  // 귤 한 그릇 — 왼쪽 뒤로 물려 케이크와 겹치지 않게
+  var bowl = mesh(GEO.cyl(0.24,0.17,0.14,14), M('#d9c9b0'), -0.78, topY+0.10, -0.42, g);
   [[0,0],[0.10,0.06],[-0.09,0.05],[0.02,-0.09]].forEach(function(p){
-    mesh(GEO.sph(0.085,9), M('#e08a3c'), -0.62+p[0], topY+0.17, 0.26+p[1], g);
+    mesh(GEO.sph(0.085,9), M('#e08a3c'), -0.78+p[0], topY+0.17, -0.42+p[1], g);
   });
   // 초 한 자루
   var jar = mesh(GEO.cyl(0.10,0.10,0.18,10), M('#e8dcc4', {transparent:true, opacity:0.85}), -0.05, topY+0.13, -0.52, g);
