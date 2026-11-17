@@ -1925,7 +1925,7 @@ function makeReindeer(){
   mesh(GEO.sph(0.135, 9), fur, 0, 0, 0, head).scale.set(0.94, 0.96, 1.16);
   /* 주둥이 · 코(루돌프) · 입 */
   mesh(GEO.sph(0.072, 8), cream, 0, -0.048, 0.128, head).scale.set(0.90, 0.80, 1.10);
-  var noseMat = new T.MeshStandardMaterial({color:'#c0392b', roughness:0.45, flatShading:true,
+  var noseMat = new T.MeshStandardMaterial({color:'#9e1b12', roughness:0.45, flatShading:true,
     emissive:0xff2222, emissiveIntensity:0.15});
   var nose = mesh(GEO.sph(0.034, 8), noseMat, 0, -0.032, 0.208, head);
   nose.scale.set(1.10, 0.92, 0.85);
@@ -1935,7 +1935,7 @@ function makeReindeer(){
   /* 코에서 번지는 붉은 빛무리 — 탭했을 때 환하게 */
   var noseGlow = new T.Sprite(new T.SpriteMaterial({map:warmTexture, color:0xff3520, transparent:true,
     opacity:0, blending:T.AdditiveBlending, depthWrite:false}));
-  noseGlow.scale.set(0.34, 0.34, 1); noseGlow.position.set(0, -0.030, 0.262); head.add(noseGlow);
+  noseGlow.scale.set(0.24, 0.24, 1); noseGlow.position.set(0, -0.030, 0.262); head.add(noseGlow);
   G.userData.nose = nose; G.userData.noseMat = noseMat; G.userData.noseLight = noseLight;
   G.userData.noseGlow = noseGlow;
   mesh(GEO.box(0.008, 0.030, 0.008), M('#7a4433'), 0, -0.078, 0.196, head);
@@ -2773,9 +2773,9 @@ function anim(t, dt){
     S.reindeerGlow = Math.max(0, S.reindeerGlow - dt);
     var ng = Math.min(1, S.reindeerGlow / 1.1);
     var npulse = 1 + Math.sin(t*9)*0.18;
-    if (refs.reindeerNoseMat) refs.reindeerNoseMat.emissiveIntensity = 0.15 + 3.4*ng*npulse;
-    if (refs.reindeerNoseLight) refs.reindeerNoseLight.intensity = 2.2*ng*npulse;
-    if (refs.reindeerNoseGlow) refs.reindeerNoseGlow.material.opacity = 0.95*ng*npulse;
+    if (refs.reindeerNoseMat) refs.reindeerNoseMat.emissiveIntensity = 0.15 + 0.9*ng*npulse;
+    if (refs.reindeerNoseLight) refs.reindeerNoseLight.intensity = 1.2*ng*npulse;
+    if (refs.reindeerNoseGlow) refs.reindeerNoseGlow.material.opacity = 0.34*ng*npulse;
   } else {
     if (refs.reindeerNoseMat && refs.reindeerNoseMat.emissiveIntensity !== 0.15)
       refs.reindeerNoseMat.emissiveIntensity = 0.15;
