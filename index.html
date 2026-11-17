@@ -330,14 +330,13 @@
           <button class="xbtn" data-close="boxSheet" aria-label="닫기">✕</button>
         </div>
       </div>
-      <!-- 내보내기·복사·예시 지우기: 관리자 잠금 해제 시에만 노출 -->
+      <!-- 내보내기·복사: 관리자 잠금 해제 시에만 노출 -->
       <div class="tools admin-only hidden" id="toolBar">
         <button class="tool admin-only hidden" id="btnCsv">⬇ CSV로 저장</button>
         <button class="tool admin-only hidden" id="btnCopy">📋 텍스트 복사</button>
-        <button class="tool mini admin-only hidden" id="btnClearSample">예시 사연 지우기</button>
       </div>
       <div class="sh-body" id="storyList"></div>
-      <div class="sh-foot" id="boxFoot">새 사연은 맨 위에 쌓여요 · CSV는 회의·라디오 코너 자료로 바로 쓸 수 있어요</div>
+      <div class="sh-foot" id="boxFoot">첫 번째 사연을 남겨 보세요 ✉️</div>
     </section>
 
     <!-- 사연 남기기 -->
@@ -2321,8 +2320,8 @@ var SAVE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwastiDJVSyPUJvPFR4
 /* ══════════════════════════════════════════════════════════
    ADMIN_PIN — 사연 삭제 권한 (관리자 전용)
    ──────────────────────────────────────────────────────────
-   이 값과 일치해야만 사연함의 `⬇ CSV로 저장`, `📋 텍스트 복사`,
-   카드의 `삭제` 버튼, `예시 사연 지우기`가 나타난다.
+   이 값과 일치해야만 사연함의 `⬇ CSV로 저장`, `📋 텍스트 복사`와
+   카드의 `삭제` 버튼이 나타난다.
    일반 방문자 화면에서는 내보내기·삭제 관련 버튼이 전혀 노출되지 않는다.
    ══════════════════════════════════════════════════════════ */
 var ADMIN_PIN = '1212';
@@ -2737,25 +2736,16 @@ document.querySelectorAll('[data-close]').forEach(function(b){
 /* ══════════ 사연 데이터 ══════════ */
 function uid(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
-var SAMPLES = [
-  { nick:'겨울밤 26', tag:'🎧 라디오에 소개', text:'재원이 목소리로 자장가 한 번만 들려주세요. 오늘 밤은 그걸로 잘게요.', ago: 2.2 },
-  { nick:'12월의 첫눈', tag:'💌 재원이에게', text:'작년 이맘때도 이 노래 들으면서 퇴근했어요. 그때처럼 따뜻한 겨울 보내고 싶어요.', ago: 5.6 },
-  { nick:'퇴근길 라디오', tag:'🎂 축하', text:'데뷔하고 늘 한결같이 좋은 작품으로 인사해줘서 고마워요. 12월 생일 축하해요!', ago: 9.1 },
-  { nick:'말랑한 쿠키', tag:'🌟 응원', text:'오늘 하루도 고생 많았어요. 재원이네 거실 불빛처럼 오래오래 따뜻하게 빛나길.', ago: 26.0 }
-];
-function seedSamples(){
-  if (store.seeded || store.stories.length > 0){ store.seeded = true; save(); return; }
-  var now = Date.now();
-  SAMPLES.forEach(function(s, i){
-    store.stories.push({
-      id: 'sample-' + i, nick: s.nick, text: s.text, tag: s.tag,
-      at: new Date(now - s.ago*3600*1000).toISOString(), sample: true
-    });
-  });
-  store.seeded = true;
-  save();
+/* 예시 사연은 쓰지 않는다 — 첫 방문자는 빈 사연함(0개)에서 시작한다.
+   예전 버전이 localStorage에 넣어둔 예시(sample 플래그)만 조용히 걷어낸다. */
+function purgeLegacySamples(){
+  var kept = store.stories.filter(function(s){ return !(s && s.sample); });
+  var dirty = kept.length !== store.stories.length;
+  if (dirty) store.stories = kept;
+  if (store.seeded){ delete store.seeded; dirty = true; }
+  if (dirty) save();
 }
-seedSamples();
+purgeLegacySamples();
 
 function fmtTime(iso){
   var d = new Date(iso);
@@ -2765,8 +2755,6 @@ function fmtTime(iso){
   return mm + '.' + dd + ' ' + hh + ':' + mi;
 }
 function storyList(){ return store.stories.slice().sort(function(a,b){ return new Date(b.at) - new Date(a.at); }); }
-function realCount(){ return store.stories.filter(function(s){ return !s.sample; }).length; }
-function sampleCount(){ return store.stories.filter(function(s){ return s.sample; }).length; }
 
 /* ── 온라인 어댑터 ── */
 function pushRemote(rec){
@@ -2808,15 +2796,14 @@ function esc(s){
 }
 function renderStories(){
   var arr = storyList();
-  var _sc = sampleCount();
-  countEl.textContent = arr.length + '개' + (_sc ? ' · 예시 ' + _sc : '');
-  badgeTop.textContent = String(realCount());
-  badgeTop.style.display = realCount() ? 'grid' : 'none';
+  countEl.textContent = arr.length + '개';
+  badgeTop.textContent = String(arr.length);
+  badgeTop.style.display = arr.length ? 'grid' : 'none';
   listEl.innerHTML = '';
   if (!arr.length){
     var e = document.createElement('div');
     e.className = 'empty';
-    e.innerHTML = '<b>📭</b>아직 사연이 없어요.<br>첫 사연을 남기면 여기 맨 위에 쌓여요.';
+    e.innerHTML = '<b>📭</b>아직 사연이 없어요.<br>남긴 사연은 이 사연함에 차곡차곡 모여요.';
     listEl.appendChild(e);
   } else {
     arr.forEach(function(s, i){
@@ -2841,13 +2828,12 @@ function renderStories(){
       listEl.appendChild(card);
     });
   }
-  var sc = sampleCount();
-  if (sc){
-    boxFoot.textContent = '지금은 예시 사연 ' + sc + '개가 담겨 있어요 · 실제 사연은 저장 주소를 연결하면 쌓입니다';
+  if (!arr.length){
+    boxFoot.textContent = '첫 번째 사연을 남겨 보세요 ✉️';
   } else if (adminUnlocked){
-    boxFoot.textContent = '새 사연은 맨 위에 쌓여요 · CSV는 회의·라디오 코너 자료로 바로 쓸 수 있어요';
+    boxFoot.textContent = '팬분들이 남긴 사연이 함께 모여요 📬 · CSV는 회의·라디오 코너 자료로 바로 쓸 수 있어요';
   } else {
-    boxFoot.textContent = '새 사연은 맨 위에 쌓여요 · 사연은 주인이 한 번에 모아봐요';
+    boxFoot.textContent = '팬분들이 남긴 사연이 함께 모여요 📬';
   }
 }
 
@@ -2900,23 +2886,12 @@ function fallbackCopy(txt, done){
   try { document.execCommand('copy'); done(); } catch(e){ toast('복사가 안 되면 CSV 저장을 써주세요'); }
   ta.remove();
 }
-document.getElementById('btnClearSample').addEventListener('click', function(){
-  if (!adminUnlocked) return;
-  audio.click();
-  var n = sampleCount();
-  if (!n){ toast('예시 사연이 이미 없어요'); return; }
-  store.stories = store.stories.filter(function(s){ return !s.sample; });
-  save(); renderStories();
-  toast('예시 사연 ' + n + '개를 지웠어요');
-});
-
 /* ══════════ 관리자 잠금 (삭제 권한) ══════════ */
 var btnAdmin = document.getElementById('btnAdmin');
 var pinModal = document.getElementById('pinModal');
 var pinCard = document.getElementById('pinCard');
 var pinInput = document.getElementById('pinInput');
 var pinErr = document.getElementById('pinErr');
-var btnClearSample = document.getElementById('btnClearSample');
 var toolBar = document.getElementById('toolBar');
 var btnCsv = document.getElementById('btnCsv');
 var btnCopy = document.getElementById('btnCopy');
@@ -2926,11 +2901,10 @@ function syncAdminUI(){
   btnAdmin.classList.toggle('on', adminUnlocked);
   btnAdmin.setAttribute('aria-pressed', adminUnlocked ? 'true' : 'false');
   btnAdmin.setAttribute('aria-label', adminUnlocked ? '관리자 잠그기' : '관리자 잠금 해제');
-  /* 내보내기·복사·예시 지우기: 관리자 전용 */
+  /* 내보내기·복사: 관리자 전용 */
   toolBar.classList.toggle('hidden', !adminUnlocked);
   btnCsv.classList.toggle('hidden', !adminUnlocked);
   btnCopy.classList.toggle('hidden', !adminUnlocked);
-  btnClearSample.classList.toggle('hidden', !adminUnlocked);
 }
 function openPin(){
   pinInput.value = ''; pinErr.textContent = '';
