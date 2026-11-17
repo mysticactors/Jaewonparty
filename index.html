@@ -86,11 +86,11 @@
   .bbtn.ghost{background:rgba(243,231,207,.12);color:var(--cream);border-color:rgba(243,231,207,.55);box-shadow:none}
 
   /* ── hint chip ──────────────────────────────── */
-  .hint{position:absolute;left:50%;bottom:70px;transform:translateX(-50%);z-index:4;
-    max-width:calc(100% - 26px);text-align:center;line-height:1.5;padding:6px 11px;font-family:var(--type);font-size:10.5px;font-weight:700;letter-spacing:.02em;white-space:normal;word-break:keep-all;
+  .hint{position:absolute;left:13px;right:13px;bottom:70px;z-index:4;
+    text-align:center;line-height:1.5;padding:6px 11px;font-family:var(--type);font-size:10.5px;font-weight:700;letter-spacing:.02em;white-space:normal;word-break:keep-all;
     color:#f3e7cf;background:rgba(20,16,30,.62);border:1px solid rgba(243,231,207,.24);
     backdrop-filter:blur(6px);pointer-events:none;opacity:1;transition:opacity .8s ease,transform .8s ease}
-  .hint.gone{opacity:0;transform:translate(-50%,6px)}
+  .hint.gone{opacity:0;transform:translateY(6px)}
 
   /* ── sheets ─────────────────────────────────── */
   .sheet{position:absolute;left:0;right:0;bottom:0;z-index:8;background:var(--cream);
