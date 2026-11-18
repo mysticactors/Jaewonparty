@@ -1824,12 +1824,16 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
   // 샴페인 잔
   var glassMat = new T.MeshStandardMaterial({color:0xd8e6ea, roughness:0.12, metalness:0.10,
     transparent:true, opacity:0.55, flatShading:true});
+  /* 샴페인 잔 — 각 잔이 개별 픽 대상('soju' 주량 토스트). 픽 프록시는 tmiProps 에서 붙인다 */
+  refs.wineGlasses = [];
   [[0.88,-0.48],[0.44,-0.80],[0.86,-0.12]].forEach(function(p){
     var gl = new T.Group(); gl.position.set(p[0], topY+0.03, p[1]); g.add(gl);
     mesh(GEO.cyl(0.035,0.045,0.02,10), glassMat, 0, 0.01, 0, gl);
     mesh(GEO.cyl(0.012,0.012,0.14,6), glassMat, 0, 0.09, 0, gl);
     var bowl = mesh(GEO.cyl(0.10,0.05,0.16,12), glassMat, 0, 0.24, 0, gl);
     mesh(GEO.cyl(0.075,0.075,0.01,12), M('#f5e2b8', {transparent:true, opacity:0.65}), 0, 0.26, 0, gl);
+    gl.userData.pick = 'soju';
+    refs.wineGlasses.push(gl);
   });
 
   // 쿠키 접시 — 앞자리 가운데, 민초(왼쪽)·홈런볼(오른쪽)과 각각 한 뼘씩 띄운다
@@ -2713,7 +2717,7 @@ var tvChannelTex = (function(){
 /* ══════════ 김재원 TMI 소품 ══════════
    ① 강경 민초단 민트초코 + 홈런볼 — 파티 테이블, 쿠키 접시 옆
    ② 최애 색 파란색 하트 쿠션 — 소파
-   ③ 소주 한 잔 — 파티 테이블
+   ③ 소주잔 → 샴페인 잔(테이블)이 주량 토스트
    ④ 프라하 스노우볼 — 벽난로 맨틀
    (탭 반응은 handleTap 의 mintChoco/homerun/blueCushion/soju/snowGlobe 분기) */
 (function tmiProps(){
@@ -2774,18 +2778,11 @@ var tvChannelTex = (function(){
   pickProxy(hb, 0.128, 0, 0.100, 0, 1.40);
   hb.userData.pick = 'homerun'; refs.homerun = hb;
 
-  /* ③ 소주잔 한 잔 — 케이크와 샴페인 병 사이, 러너 위 */
-  var sj = new T.Group(); sj.position.set(0.28, TOPY, -0.14); tb.add(sj);
-  mesh(GEO.cyl(0.052, 0.043, 0.128, 12), glassMat, 0, 0.064, 0, sj);
-  mesh(GEO.cyl(0.055, 0.055, 0.007, 12), glassMat, 0, 0.128, 0, sj);
-  mesh(GEO.cyl(0.047, 0.039, 0.070, 12),
-    new T.MeshStandardMaterial({color:0xeaf6ff, roughness:0.12, metalness:0.0,
-      transparent:true, opacity:0.80, flatShading:true}), 0, 0.038, 0, sj);
-  mesh(GEO.cyl(0.047, 0.047, 0.005, 12),
-    new T.MeshStandardMaterial({color:0xf6fdff, roughness:0.05, transparent:true, opacity:0.9}),
-    0, 0.074, 0, sj);
-  pickProxy(sj, 0.100, 0, 0.075, 0, 1.35);
-  sj.userData.pick = 'soju'; refs.soju = sj;
+  /* ③ 소주잔은 지현님 요청으로 제거 — 주량 토스트는 테이블의 샴페인 잔이 맡는다
+     (샴페인 잔 그룹은 위 table 안에서 userData.pick='soju' 로 등록됨) */
+  (refs.wineGlasses || []).forEach(function(gl){
+    pickProxy(gl, 0.085, 0, 0.22, 0, 1.55);      /* 잔은 가늘어서 세로로 길게 잡아 준다 */
+  });
 
   /* ② 소파 — 파란색 하트 쿠션 (소파와 같은 로컬 좌표계) */
   var sg = new T.Group(); sg.position.set(-4.32, 0, -1.55); sg.rotation.y = Math.PI/2 + 0.14; room.add(sg);
@@ -4413,7 +4410,7 @@ var PICK_LABEL = {
   pendant:'💡 조명 조절', sofa:'🛋️ 재원이의 소파',
   table:'🎂 파티 테이블', lamp:'💡 스탠드', fireplace:'🔥 벽난로 불 지피기',
   reindeer:'🦌 순록 코 반짝이기', tiger:'🐯 호랑이 인형', tv:'📺 재원이 출연작',
-  mintChoco:'🍦 강경 민초단의 픽', homerun:'⚾ 재원이표 홈런볼', soju:'🥃 소중한 주량 한 잔',
+  mintChoco:'🍦 강경 민초단의 픽', homerun:'⚾ 재원이표 홈런볼', soju:'🥂 소중한 주량 한 잔',
   blueCushion:'💙 최애 색 파란 하트', snowGlobe:'🔮 인생 여행지 프라하',
   mirror:'🪞 뮤뱅 MC 필수품', calendar:'📅 12월 30일, 우리 만나는 날'
 };
