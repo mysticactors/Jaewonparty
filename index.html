@@ -1707,8 +1707,8 @@ function stringLights(A, B, sag, count, parent, colA, colB){
   addBox(g, 0.30, 0.74, 1.32, VELVET2, 1.55, 0.74, 0);
   /* 액센트 쿠션 — 전부 좌석 윗면(y=0.78)에 정확히 얹고, 등 쿠션 앞면(z=-0.23)을
      뚫지 않게 배치. 바닥이 1~2mm만 떠도/묻혀도 눈에 띄므로 실제 메쉬 최저점 기준으로 맞췄다. */
-  // 액센트 쿠션 — 딥그린 벨벳 (왼쪽 끝). 체크 담요 위에 얹혀 있어 담요 윗면(0.893)에 접지
-  var cp = addBox(g, 0.52, 0.52, 0.16, C.grn2, -1.06, 1.205, -0.10, {roughness:1});
+  // 액센트 쿠션 — 딥그린 벨벳 (왼쪽 끝). 좌석 윗면에 바로 접지
+  var cp = addBox(g, 0.52, 0.52, 0.16, C.grn2, -1.06, 1.093, -0.10, {roughness:1});
   cp.rotation.z = 0.16; cp.rotation.x = -0.26;
   // 골드 원형 쿠션 — 앞자리 오른쪽에 살짝 기대어
   var cpg = mesh(GEO.sph(0.24, 10), M(C.gold2, {roughness:0.42, metalness:0.12}), 0.78, 1.019, 0.30, g);
@@ -1720,14 +1720,14 @@ function stringLights(A, B, sag, count, parent, colA, colB){
   // 코랄 벨벳 쿠션 — 하트 오른쪽
   var cp3 = mesh(GEO.sph(0.21, 10), M(C.redWarm, {roughness:1}), 0.46, 0.987, -0.16, g);
   cp3.scale.set(1.0, 1.0, 0.42); cp3.rotation.z = 0.14; cp3.rotation.x = -0.22;
-  /* 체크 담요 — 앞자리 왼쪽에 두 번 접어 평평하게 올린 모습.
-     예전엔 두툼한 3단이라 초록 쿠션 아랫도리를 뚫고 앞으로 삐져나와 '묻힌' 것처럼 보였다.
-     두 겹으로 낮추고 좌석 앞모서리(0.63)·등 쿠션 앞면(-0.23)·팔걸이(-1.40) 안쪽으로 넣었다. */
+  /* 체크 담요 — 좌석 앞자리 왼쪽에 납작하게 두 번 접어 내려놓은 모습.
+     예전엔 두툼한 3단이 초록 쿠션 아랫도리를 뚫고 앞모서리 밖으로 삐져나와 '묻힌' 것처럼 보였다.
+     초록 쿠션 앞(z=0.05)에서 20cm 이상 띄워 좌석 앞쪽에만 놓고, 높이도 9cm로 낮춰 쿠션 실루엣을 가리지 않는다. */
   var throwMat = new T.MeshStandardMaterial({map:plaidTex, roughness:1, metalness:0, side:T.DoubleSide});
-  var th = new T.Mesh(GEO.box(0.58, 0.06, 0.46), throwMat);
-  th.position.set(-1.04, 0.814, 0.05); th.rotation.y = 0.10; th.castShadow = true; g.add(th);
-  var th2 = new T.Mesh(GEO.box(0.52, 0.05, 0.40), throwMat);
-  th2.position.set(-1.03, 0.868, 0.04); th2.rotation.y = 0.06; g.add(th2);
+  var th = new T.Mesh(GEO.box(0.56, 0.065, 0.30), throwMat);
+  th.position.set(-1.10, 0.8165, 0.45); th.rotation.y = 0.08; th.castShadow = true; g.add(th);
+  var th2 = new T.Mesh(GEO.box(0.50, 0.06, 0.26), throwMat);
+  th2.position.set(-1.10, 0.8765, 0.43); th2.rotation.y = 0.05; g.add(th2);
   // 다과 접시 (소파 옆 사이드 테이블)
   var st = new T.Group(); st.position.set(-4.20, 0, 0.75); room.add(st);
   mesh(GEO.cyl(0.44,0.44,0.06,14), M(C.wood2), 0, 0.54, 0, st);
