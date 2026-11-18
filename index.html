@@ -1705,32 +1705,35 @@ function stringLights(A, B, sag, count, parent, colA, colB){
   // 팔걸이
   addBox(g, 0.30, 0.74, 1.32, VELVET2, -1.55, 0.74, 0);
   addBox(g, 0.30, 0.74, 1.32, VELVET2, 1.55, 0.74, 0);
-  // 액센트 쿠션 — 딥그린 벨벳
-  var cp = addBox(g, 0.52, 0.52, 0.16, C.grn2, -1.12, 0.98, 0.30, {roughness:1});
-  cp.rotation.z = 0.28; cp.rotation.x = -0.12;
-  // 골드 Ø¡Ø
-  var cpg = mesh(GEO.sph(0.24, 10), M(C.gold2, {roughness:0.42, metalness:0.12}), 0.98, 0.92, 0.18, g);
-  cpg.scale.set(1.0, 1.0, 0.44); cpg.rotation.z = -0.20;
+  // 액센트 쿠션 — 딥그린 벨벳 (좌석 위에 올려 등 쿠션에 기대게)
+  var cp = addBox(g, 0.52, 0.52, 0.16, C.grn2, -1.12, 1.05, -0.13, {roughness:1});
+  cp.rotation.z = 0.22; cp.rotation.x = -0.26;
+  // 골드 원형 쿠션
+  var cpg = mesh(GEO.sph(0.24, 10), M(C.gold2, {roughness:0.42, metalness:0.12}), 0.80, 1.02, -0.15, g);
+  cpg.scale.set(1.0, 1.0, 0.44); cpg.rotation.z = -0.20; cpg.rotation.x = -0.20;
   // 체크 쿠션
   var plaidMat = new T.MeshStandardMaterial({map:plaidTex, roughness:1, metalness:0});
   var cp2 = new T.Mesh(GEO.sph(0.25, 10), plaidMat);
-  cp2.position.set(1.14, 0.94, 0.20); cp2.scale.set(1.0, 1.0, 0.44); cp2.rotation.z = -0.24; g.add(cp2);
+  cp2.position.set(1.24, 1.03, -0.13); cp2.scale.set(1.0, 1.0, 0.44); cp2.rotation.z = -0.20; cp2.rotation.x = -0.22; g.add(cp2);
   // 빨간 벨벳 쿠션
-  var cp3 = mesh(GEO.sph(0.21, 10), M(C.redWarm, {roughness:1}), 0.02, 0.90, 0.26, g);
-  cp3.scale.set(1.0, 1.0, 0.42); cp3.rotation.z = 0.14;
-  // 체크 담요 — 팔걸이에 걸쳐 내려오게
+  var cp3 = mesh(GEO.sph(0.21, 10), M(C.redWarm, {roughness:1}), 0.02, 0.99, -0.18, g);
+  cp3.scale.set(1.0, 1.0, 0.42); cp3.rotation.z = 0.14; cp3.rotation.x = -0.22;
+  // 체크 담요 — 팔걸이 윗면에 올리고 앞면으로 늘어뜨림
   var throwMat = new T.MeshStandardMaterial({map:plaidTex, roughness:1, metalness:0, side:T.DoubleSide});
-  for (var w=0;w<3;w++){
-    var th0 = new T.Mesh(GEO.box(0.62, 0.60, 0.10), throwMat);
-    th0.position.set(-1.55, 0.72 - w*0.24, 0.30 + w*0.02);
-    th0.rotation.x = 0.16; th0.rotation.z = 0.05;
-    th0.castShadow = true; g.add(th0);
-  }
-  // 접어 둔 담요
+  var thTop = new T.Mesh(GEO.box(0.56, 0.09, 0.52), throwMat);
+  thTop.position.set(-1.55, 1.155, 0.28); thTop.rotation.y = 0.03;
+  thTop.castShadow = true; g.add(thTop);
+  var thDrop = new T.Mesh(GEO.box(0.44, 0.50, 0.09), throwMat);
+  thDrop.position.set(-1.57, 0.90, 0.68); thDrop.rotation.x = 0.05; thDrop.rotation.z = 0.02;
+  thDrop.castShadow = true; g.add(thDrop);
+  var thDrop2 = new T.Mesh(GEO.box(0.40, 0.18, 0.08), throwMat);
+  thDrop2.position.set(-1.56, 0.66, 0.70); thDrop2.rotation.z = 0.05;
+  thDrop2.castShadow = true; g.add(thDrop2);
+  // 접어 둔 담요 — 좌석 위에 올려 등 쿠션 쪽으로
   var th = new T.Mesh(GEO.box(0.60, 0.10, 0.58), throwMat);
-  th.position.set(0.34, 0.80, 0.28); th.rotation.y = 0.22; th.castShadow = true; g.add(th);
+  th.position.set(0.42, 0.83, 0.40); th.rotation.y = 0.22; th.castShadow = true; g.add(th);
   var th2 = new T.Mesh(GEO.box(0.54, 0.09, 0.52), throwMat);
-  th2.position.set(0.34, 0.87, 0.28); th2.rotation.y = 0.28; g.add(th2);
+  th2.position.set(0.44, 0.90, 0.36); th2.rotation.y = 0.28; g.add(th2);
   // 다과 접시 (소파 옆 사이드 테이블)
   var st = new T.Group(); st.position.set(-4.20, 0, 0.75); room.add(st);
   mesh(GEO.cyl(0.44,0.44,0.06,14), M(C.wood2), 0, 0.54, 0, st);
@@ -2793,7 +2796,9 @@ var tvChannelTex = (function(){
 
   /* ② 소파 — 파란색 하트 쿠션 (소파와 같은 로컬 좌표계) */
   var sg = new T.Group(); sg.position.set(-4.32, 0, -1.55); sg.rotation.y = Math.PI/2 + 0.14; room.add(sg);
-  var heart = new T.Group(); heart.position.set(-0.455, 0.905, 0.360); heart.rotation.z = 0.08; sg.add(heart);
+  var HEART_SCALE = 1.5;                 /* 지현님 요청 — 하트 쿠션 확대 */
+  var heart = new T.Group(); heart.position.set(-0.455, 1.015, -0.14); heart.rotation.z = 0.06; heart.rotation.x = -0.12;
+  heart.scale.setScalar(HEART_SCALE); heart.userData.baseScale = HEART_SCALE; sg.add(heart);
   var blueMat = M('#3668d8', {roughness:0.92});
   var hp1 = mesh(GEO.sph(0.100, 14), blueMat, -0.062, 0.045, 0, heart); hp1.scale.set(1, 1, 0.50);
   var hp2 = mesh(GEO.sph(0.100, 14), blueMat, 0.062, 0.045, 0, heart); hp2.scale.set(1, 1, 0.50);
@@ -2801,7 +2806,7 @@ var tvChannelTex = (function(){
   hp3.rotation.z = Math.PI; hp3.scale.set(1, 1, 0.50);
   var hpp = mesh(GEO.sph(0.030, 10), M('#5b86ea', {roughness:0.6}), -0.070, 0.058, 0, heart);
   hpp.scale.set(1, 1, 0.42);
-  pickProxy(heart, 0.195, 0, 0.010, 0);
+  pickProxy(heart, 0.165, 0, 0.020, 0);
   heart.userData.pick = 'blueCushion'; refs.blueHeart = heart;
 
   /* ④ 벽난로 맨틀 — 프라하 스노우볼 */
@@ -3254,7 +3259,7 @@ function anim(t, dt){
       sbit.position.x = sbit.userData.x0 + Math.cos(t*0.62 + sbit.userData.ph)*0.009;
     }
   }
-  if (refs.blueHeart) refs.blueHeart.scale.setScalar(1 + Math.sin(t*1.55)*0.012);
+  if (refs.blueHeart) refs.blueHeart.scale.setScalar((refs.blueHeart.userData.baseScale || 1) * (1 + Math.sin(t*1.55)*0.008));
   // 트리 별
   if (refs.star) refs.star.rotation.y += dt*0.7;
   if (refs.starGlow) refs.starGlow.material.opacity = 0.75 + Math.sin(t*2.4)*0.22;
