@@ -575,7 +575,7 @@
       </div>
       <div class="sh-body">
         <label class="lbl" for="nickInput">닉네임</label>
-        <input id="nickInput" maxlength="14" placeholder="아강단 #0000"
+        <input id="nickInput" maxlength="14" placeholder="닉네임"
                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                name="story-name-q7k1" data-lpignore="true" data-1p-ignore data-form-type="other">
         <label class="lbl" for="storyInput">사연</label>
@@ -4263,7 +4263,7 @@ var storySend = document.getElementById('storySend');
 var storyCount = document.getElementById('storyCount');
 
 if (store.nick) nickInput.value = '';
-nickInput.placeholder = autoNick();
+/* placeholder는 '닉네임' 고정 — 비워서 보내면 제출 시 autoNick()으로 아강단 #랜덤번호가 들어간다 */
 
 var STORY_MAX = 200;
 function syncMsg(){
