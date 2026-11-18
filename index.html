@@ -2789,8 +2789,8 @@ var tvChannelTex = (function(){
 
   /* ② 소파 — 파란색 하트 쿠션 (소파와 같은 로컬 좌표계) */
   var sg = new T.Group(); sg.position.set(-4.32, 0, -1.55); sg.rotation.y = Math.PI/2 + 0.14; room.add(sg);
-  var HEART_SCALE = 1.5;                 /* 지현님 요청 — 하트 쿠션 확대 */
-  var heart = new T.Group(); heart.position.set(-0.30, 1.02, -0.06); heart.rotation.z = 0.05; heart.rotation.x = -0.10; heart.rotation.y = 0.10;
+  var HEART_SCALE = 1.7;                 /* 지현님 요청 — 하트 쿠션 확대 */
+  var heart = new T.Group(); heart.position.set(-0.26, 1.035, 0.06); heart.rotation.z = 0.04; heart.rotation.x = -0.12; heart.rotation.y = -0.22;
   heart.scale.setScalar(HEART_SCALE); heart.userData.baseScale = HEART_SCALE; sg.add(heart);
   var blueMat = M('#3668d8', {roughness:0.92});
   var hp1 = mesh(GEO.sph(0.100, 14), blueMat, -0.062, 0.045, 0, heart); hp1.scale.set(1, 1, 0.50);
