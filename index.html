@@ -4455,7 +4455,7 @@ canvas.addEventListener('pointermove', function(ev){
   } else if (dragMode === 'pinch' && n === 2){
     var ids = Object.keys(pointers);
     var d = Math.hypot(pointers[ids[0]].x-pointers[ids[1]].x, pointers[ids[0]].y-pointers[ids[1]].y);
-    if (lastMid > 0) ctl.tdist = Math.max(ctl.base*0.52, Math.min(ctl.base*1.45, ctl.tdist*(lastMid/d)));
+    if (lastMid > 0) ctl.tdist = Math.max(ctl.base*0.30, Math.min(ctl.base*1.45, ctl.tdist*(lastMid/d)));
     lastMid = d; moved = 99;
   }
 });
@@ -4478,7 +4478,7 @@ canvas.addEventListener('pointercancel', endPointer);
 canvas.addEventListener('wheel', function(ev){
   ev.preventDefault();
   var k = Math.exp(ev.deltaY * 0.0011);
-  ctl.tdist = Math.max(ctl.base*0.52, Math.min(ctl.base*1.5, ctl.tdist*k));
+  ctl.tdist = Math.max(ctl.base*0.30, Math.min(ctl.base*1.5, ctl.tdist*k));
 }, {passive:false});
 
 /* 마우스 호버 라벨 */
