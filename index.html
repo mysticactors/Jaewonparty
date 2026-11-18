@@ -4110,7 +4110,7 @@ function takePhoto(){
   var W = 1080, H = 1920;
   var c = document.createElement('canvas'); c.width = W; c.height = H;
   var g = c.getContext('2d');
-  g.fillStyle = '#0d1a15'; g.fillRect(0,0,W,H);
+  g.fillStyle = '#fffaf6'; g.fillRect(0,0,W,H);
   var pad = 46, top = 138, bottom = 208;
   var ix = pad, iy = top, iw = W-pad*2, ih = H-top-bottom;
   var sa = src.width/src.height, ta = iw/ih;
@@ -4119,27 +4119,30 @@ function takePhoto(){
   else        { sw = src.width;  sh = sw/ta; sx = 0; sy = (src.height-sh)/2; }
   g.drawImage(src, sx, sy, sw, sh, ix, iy, iw, ih);
   var vg = g.createRadialGradient(ix+iw/2, iy+ih*0.45, iw*0.25, ix+iw/2, iy+ih*0.45, iw*0.95);
-  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(4,6,12,0.42)');
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(30,18,26,0.34)');
   g.fillStyle = vg; g.fillRect(ix, iy, iw, ih);
-  g.strokeStyle = 'rgba(216,178,115,0.55)'; g.lineWidth = 4; g.strokeRect(ix, iy, iw, ih);
+  g.strokeStyle = 'rgba(217,125,142,0.5)'; g.lineWidth = 4; g.strokeRect(ix, iy, iw, ih);
   g.textAlign = 'center';
-  g.fillStyle = '#f6efe0';
+  g.fillStyle = '#6a5150';
   g.font = '700 42px "Gowun Batang","Apple SD Gothic Neo",serif';
-  g.fillText('재원이네 연말 파티룸', W/2, 84);
+  g.fillText('♥ 재원이네 연말 파티룸', W/2, 84);
   g.font = '700 22px ui-monospace,monospace';
-  g.fillStyle = 'rgba(216,178,115,0.85)';
-  g.fillText('O U R   H O M E   P A R T Y', W/2, 120);
-  g.fillStyle = '#f6efe0';
+  g.fillStyle = '#d97d8e';
+  g.fillText('O U R   H O M E   P A R T Y', W/2, 122);
+  g.fillStyle = '#6a5150';
   g.font = '700 28px "Gowun Batang","Apple SD Gothic Neo",serif';
   g.fillText('초대받은 손님 #' + (100 + Math.floor(Math.random()*899)), W/2, H-128);
   g.font = '700 21px ui-monospace,monospace';
-  g.fillStyle = 'rgba(216,178,115,0.7)';
+  g.fillStyle = 'rgba(160,120,128,0.85)';
   g.fillText('DEC 30 · 2026  —  ' + new Date().toISOString().slice(0,10).replace(/-/g,'.'), W/2, H-88);
-  g.strokeStyle = 'rgba(216,178,115,0.5)'; g.lineWidth = 3;
+  g.strokeStyle = 'rgba(217,125,142,0.45)'; g.lineWidth = 3;
   var m = 22;
   [[12,12,1,1],[W-12,12,-1,1],[12,H-12,1,-1],[W-12,H-12,-1,-1]].forEach(function(p){
     g.beginPath(); g.moveTo(p[0], p[1]+p[3]*m); g.lineTo(p[0],p[1]); g.lineTo(p[0]+p[2]*m, p[1]); g.stroke();
   });
+  /* 점선 스티치 테두리 */
+  g.setLineDash([7,7]); g.strokeStyle = 'rgba(217,125,142,0.35)'; g.lineWidth = 2;
+  g.strokeRect(ix-14, iy-14, iw+28, ih+28); g.setLineDash([]);
   var url = c.toDataURL('image/png');
   var a = document.createElement('a');
   a.href = url; a.download = '재원이네_파티_' + Date.now() + '.png';
