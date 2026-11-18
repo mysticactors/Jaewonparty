@@ -155,7 +155,7 @@
 
   /* ── 하단: 대화창 독 ─────────────────────────── */
   .dock{position:absolute;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:6;
-    display:grid;grid-template-columns:repeat(5,1fr);align-items:center;
+    display:grid;grid-template-columns:repeat(4,1fr);align-items:center;
     padding:7px 4px;border-radius:22px;
     background:rgba(255,250,246,.97);border:1.5px solid #fff;
     box-shadow:0 10px 26px rgba(120,88,92,.22),inset 0 0 0 1px rgba(240,207,215,.75);
@@ -300,16 +300,6 @@
     display:flex;flex-direction:column;gap:8px;border-top:1.5px solid var(--line2)}
   .sh-footwrap .sh-foot{padding:0;border:0;flex:0 0 auto;text-align:center}
 
-  /* ── 오브제 안내 ─────────────────────────────── */
-  .glst{display:flex;flex-direction:column;gap:1px}
-  .gitem{display:flex;align-items:center;gap:9px;padding:9px 2px;
-    border-bottom:1px solid rgba(242,221,211,.7)}
-  .gitem:last-child{border-bottom:0}
-  .gitem .gi{width:24px;height:24px;display:grid;place-items:center;flex:0 0 auto;
-    font-size:12px;line-height:1;border-radius:50%;background:var(--blush2)}
-  .gitem .gn{font-family:var(--serif);font-size:11.5px;font-weight:700;color:var(--cocoa);flex:0 0 auto}
-  .gitem .gd{font-family:var(--body);font-size:9.5px;color:var(--cocoa3);letter-spacing:.01em;margin-left:auto;text-align:right}
-
   /* ── 툴팁 · 토스트 (미연시 대화창) ───────────── */
   #tip{position:absolute;z-index:11;left:0;top:0;transform:translate(-50%,-124%);
     padding:7px 11px;max-width:214px;font-family:var(--body);font-size:10px;font-weight:400;
@@ -325,7 +315,8 @@
     box-shadow:0 10px 24px rgba(120,88,92,.24),inset 0 0 0 1px rgba(240,207,215,.85);
     -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
     opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;
-    max-width:82%;word-break:keep-all}
+    width:max-content;max-width:82%;word-break:keep-all}
+  #toast .tmsg{white-space:pre-line}
   #toast::before{content:"♥";position:absolute;left:12px;top:50%;transform:translateY(-50%);
     font-size:11px;color:var(--coral)}
   #toast::after{content:"";position:absolute;left:22%;right:22%;bottom:-4px;height:8px;
@@ -382,6 +373,8 @@
   #invite.open .iv-letter{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
 
   .invite-card{position:relative;width:100%;padding:22px 22px 18px;text-align:center;
+    --iv-gap:10px;
+    display:flex;flex-direction:column;align-items:center;gap:var(--iv-gap);
     color:var(--cocoa);font-family:var(--ui);
     background:linear-gradient(163deg,#fffdf9 0%,#fff6ee 46%,#fdeade 100%);
     border:1.5px solid #fff;border-radius:20px;
@@ -390,24 +383,25 @@
     transform:rotate(-1deg)}
   .invite-card::before{content:"";position:absolute;inset:9px;border:1px dashed rgba(232,190,178,.75);
     border-radius:14px;pointer-events:none}
-  .iv-kicker{display:block;font-family:var(--ui);font-size:8px;font-weight:400;
+  .iv-kicker{display:block;margin:0;font-family:var(--ui);font-size:8px;font-weight:400;
     letter-spacing:.34em;color:var(--rose);text-indent:.34em}
-  .iv-rule{width:34px;height:1px;margin:9px auto 0;
+  .iv-rule{width:34px;height:1px;margin:0;flex:0 0 auto;
     background:linear-gradient(90deg,transparent,rgba(217,125,142,.85),transparent)}
-  .iv-seal{width:38px;height:38px;margin:11px auto 8px;border-radius:50%;display:grid;place-items:center;
+  .iv-seal{width:38px;height:38px;margin:0;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;
     font-family:Georgia,"Times New Roman",serif;font-size:16px;font-weight:700;color:#fff6f2;
     background:radial-gradient(circle at 34% 30%,#dd97a4 0%,#cb7286 52%,#c4666d 100%);
     box-shadow:0 2px 0 rgba(160,95,105,.34),inset 0 0 0 1.5px rgba(255,236,232,.55),0 4px 12px rgba(185,105,115,.3)}
-  .iv-to{margin:9px 0 0;font-family:var(--ui);font-size:9.5px;font-weight:400;letter-spacing:.08em;color:var(--cocoa3)}
+  .iv-to{margin:0;width:100%;font-family:var(--ui);font-size:9.5px;font-weight:400;letter-spacing:.08em;color:var(--cocoa3)}
   .iv-to b{font-family:var(--serif);font-weight:700;font-size:14px;letter-spacing:.01em;color:var(--rose2);margin-left:2px}
-  .iv-date{margin:7px 0 0;font-family:var(--ui);font-size:9.5px;font-weight:400;
+  .iv-date{margin:0;width:100%;font-family:var(--ui);font-size:9.5px;font-weight:400;
     letter-spacing:.26em;color:var(--cocoa2);text-indent:.26em}
-  .iv-msg{margin:13px 0 0;font-family:var(--serif);font-size:13px;font-weight:400;line-height:1.95;
+  .iv-msg{margin:0;width:100%;font-family:var(--serif);font-size:13px;font-weight:400;line-height:1.9;
     letter-spacing:.005em;color:#5b4640;word-break:keep-all}
+  .iv-msg + .iv-msg{margin:0}
   .iv-msg b{font-weight:700;color:var(--rose2)}
-  .iv-sign{margin:11px 0 0;font-family:var(--ui);font-size:9.5px;font-weight:400;letter-spacing:.04em;color:var(--cocoa3)}
-  .iv-sign em{font-style:normal;font-family:var(--latin);font-size:15px;letter-spacing:.04em;color:var(--cocoa2)}
-  .iv-btn{width:100%;margin-top:14px;height:44px;cursor:pointer;font-family:var(--ui);
+  .iv-sign{margin:0;width:100%;font-family:var(--ui);font-size:9.5px;font-weight:400;letter-spacing:.04em;color:var(--cocoa3)}
+  .iv-sign em{font-style:normal;font-family:var(--serif);font-weight:700;font-size:14px;letter-spacing:.01em;color:var(--rose2)}
+  .iv-btn{width:100%;margin:0;height:44px;cursor:pointer;font-family:var(--ui);
     font-size:11.5px;font-weight:400;letter-spacing:.1em;color:#fff;
     background:linear-gradient(180deg,var(--coral) 0%,var(--coral2) 100%);
     border:1.5px solid #fff;border-radius:14px;
@@ -415,16 +409,16 @@
     transition:filter .15s ease,transform .1s ease}
   .iv-btn:hover{filter:brightness(1.05)}
   .iv-btn:active{transform:translateY(1px)}
-  .iv-note{margin:8px 0 0;font-family:var(--ui);font-size:9px;font-weight:400;letter-spacing:.02em;color:var(--cocoa3)}
+  .iv-note{margin:0;width:100%;font-family:var(--ui);font-size:9px;font-weight:400;letter-spacing:.02em;color:var(--cocoa3)}
   @keyframes blink{0%,100%{opacity:.4}50%{opacity:.9}}
   @media (max-height:700px){
     .env-layer{padding-top:8vh;gap:13px}
-    .invite-card{padding:16px 18px 13px}
-    .iv-to{margin-top:8px;font-size:9px}
+    .invite-card{padding:16px 18px 13px;--iv-gap:8px}
+    .iv-to{font-size:9px}
     .iv-to b{font-size:13px}
-    .iv-msg{font-size:12px;line-height:1.8;margin-top:10px}
-    .iv-seal{width:32px;height:32px;font-size:14px;margin:7px auto 6px}
-    .iv-btn{height:40px;margin-top:10px}
+    .iv-msg{font-size:12px;line-height:1.75}
+    .iv-seal{width:32px;height:32px;font-size:14px}
+    .iv-btn{height:40px}
   }
 
   /* ── 관리자 PIN ──────────────────────────────── */
@@ -509,7 +503,7 @@
     <!-- ── 마스트헤드 ─────────────────────────── -->
     <header class="masthead">
       <div class="mark">
-        <span class="mark-k">♥ HOME PARTY · VOL.12</span>
+        <span class="mark-k">♥ YEAR-END PARTY · VOL.12</span>
         <span class="mark-t">재원이네 <i>연말 파티룸</i></span>
         <span class="mark-rule"></span>
         <span class="mark-d">12.30 WED · 광운대 동해문화예술관</span>
@@ -533,7 +527,6 @@
       <button class="dockitem" id="btnWrite"><span class="di">📻</span><span class="dl">라디오 사연</span></button>
       <button class="dockitem" id="btnBox2"><span class="di">📝</span><span class="dl">방명록</span><span class="nbadge" id="badgeDock">0</span></button>
       <button class="dockitem" id="btnPhoto"><span class="di">📷</span><span class="dl">사진</span></button>
-      <button class="dockitem" id="btnGuide"><span class="di">✦</span><span class="dl">오브제 안내</span></button>
       <button class="dockitem" id="btnAdminDock"><span class="di">⚿</span><span class="dl">관리자</span></button>
     </nav>
 
@@ -551,7 +544,7 @@
         </div>
       </div>
       <div class="gbwrite">
-        <input id="gbNick" maxlength="14" placeholder="닉네임 (비우면 손님)"
+        <input id="gbNick" maxlength="14" placeholder="닉네임 (비우면 아강단 #랜덤번호)"
                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                name="gb-name-x8f2" data-lpignore="true" data-1p-ignore data-form-type="other"
                aria-label="닉네임">
@@ -586,7 +579,7 @@
       </div>
       <div class="sh-body">
         <label class="lbl" for="nickInput">닉네임</label>
-        <input id="nickInput" maxlength="14" placeholder="겨울밤 26"
+        <input id="nickInput" maxlength="14" placeholder="아강단 #0000"
                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                name="story-name-q7k1" data-lpignore="true" data-1p-ignore data-form-type="other">
         <label class="lbl" for="storyInput">사연</label>
@@ -598,33 +591,6 @@
         </div>
       </div>
       <div class="sh-foot">보낸 사연은 방명록에 공개되지 않아요<br>채택되면 무대에서 소개될 수 있어요</div>
-    </section>
-
-    <!-- ✦ 오브제 안내 -->
-    <section class="sheet" id="guideSheet" aria-hidden="true">
-      <div class="sh-head">
-        <div>
-          <span class="nametag"><span class="ht">♡</span> 거실 <b>소품</b></span>
-          <h3>오브제 안내</h3>
-          <div class="sub">거실 소품을 누르면 반응해요<br>끌어서 둘러보고, 소품을 한 번씩 눌러 보세요</div>
-        </div>
-        <button class="xbtn" data-close="guideSheet" aria-label="닫기">✕</button>
-      </div>
-      <div class="sh-body">
-        <div class="glst">
-          <div class="gitem"><span class="gi">🎄</span><span class="gn">크리스마스 트리</span><span class="gd">불빛 켜고 끄기</span></div>
-          <div class="gitem"><span class="gi">🦌</span><span class="gn">순록</span><span class="gd">코 반짝이기</span></div>
-          <div class="gitem"><span class="gi">🔥</span><span class="gn">벽난로</span><span class="gd">장작 활활 타오르기</span></div>
-          <div class="gitem"><span class="gi">🐶</span><span class="gn">강아지 벽시계</span><span class="gd">쓰다듬기</span></div>
-          <div class="gitem"><span class="gi">🐯</span><span class="gn">호랑이 인형</span><span class="gd">어흥</span></div>
-          <div class="gitem"><span class="gi">📺</span><span class="gn">TV</span><span class="gd">채널 바꾸기</span></div>
-          <div class="gitem"><span class="gi">📻</span><span class="gn">스피커</span><span class="gd">캐롤 켜고 끄기</span></div>
-          <div class="gitem"><span class="gi">📮</span><span class="gn">우체통</span><span class="gd">라디오 사연 보내기</span></div>
-          <div class="gitem"><span class="gi">📝</span><span class="gn">책상 위 노트</span><span class="gd">방명록 펼치기</span></div>
-          <div class="gitem"><span class="gi">💡</span><span class="gn">조명</span><span class="gd">밝기 조절</span></div>
-        </div>
-      </div>
-      <div class="sh-foot">소품에 마우스를 올리면 이름이 뜨고, 누르면 반응해요</div>
     </section>
 
     <!-- 관리자 PIN -->
@@ -655,7 +621,8 @@
           <div class="iv-seal" aria-hidden="true">J</div>
           <p class="iv-to">To. <b>아강단</b></p>
           <p class="iv-date">2026 · 12 · 30</p>
-          <p class="iv-msg">우리 12월 30일, 광운대학교<br>동해문화예술관에서 만날래?<br><br>기다리고 있을게.</p>
+          <p class="iv-msg">우리 12월 30일, 광운대학교<br>동해문화예술관에서 만날래?</p>
+          <p class="iv-msg">기다리고 있을게.</p>
           <p class="iv-sign">From. <em>재원</em></p>
           <button class="iv-btn" id="btnEnter" type="button">파티룸 들어가기</button>
           <p class="iv-note">🎧 들어가면 캐롤이 함께 흘러요</p>
@@ -3200,6 +3167,10 @@ try {
   localStorage.removeItem(NICK_KEY);
 } catch(e){}
 
+/* ───────── 닉네임 기본값 ───────── */
+/* 닉네임을 비우면 '손님' 대신 '아강단 #랜덤4자리'로 남긴다 */
+function autoNick(){ return '아강단 #' + Math.floor(1000 + Math.random() * 9000); }
+
 /* ───────── 토스트 ───────── */
 var toastTimer = null;
 function toast(msg, ms){
@@ -3599,7 +3570,7 @@ var audio = {
     if (this.fallback){
       if (!this.warned){
         this.warned = true;
-        toast('소리를 켜지 못했어요 · 아이폰 무음 스위치를 확인해 주세요', 3800);
+        toast('소리를 켜지 못했어요\n아이폰 무음 스위치를 확인해 주세요', 3800);
       }
       return;
     }
@@ -3614,7 +3585,7 @@ var audio = {
       }
     } catch(e){}
     this.warned = true;
-    toast('무음 스위치를 끄면 소리가 나요 · 내장 음악으로 틀게요 ♪', 4200);
+    toast('무음 스위치를 끄면 소리가 나요\n내장 음악으로 틀어볼게요 ♪', 4200);
   },
 
   setEnabled: function(on){
@@ -3633,8 +3604,8 @@ var audio = {
 };
 
 /* ───────── 시트 ───────── */
-var SHEETS = ['boxSheet','writeSheet','guideSheet'];
-var SHEET_DOCK = { boxSheet:'btnBox2', writeSheet:'btnWrite', guideSheet:'btnGuide' };
+var SHEETS = ['boxSheet','writeSheet'];
+var SHEET_DOCK = { boxSheet:'btnBox2', writeSheet:'btnWrite' };
 function openSheet(id){
   SHEETS.forEach(function(s){
     var el = document.getElementById(s);
@@ -3749,7 +3720,7 @@ function pullGuestbook(){  if (!SAVE_ENDPOINT) return;
     arr.forEach(function(s){
       if (!s || !s.id || deletedIds[s.id]) return;
       byId[s.id] = 1;
-      list.push({ id:s.id, nick:s.nick||'손님', text:s.text||'', at:s.at||new Date().toISOString() });
+      list.push({ id:s.id, nick:s.nick||'아강단', text:s.text||'', at:s.at||new Date().toISOString() });
     });
     /* 방금 남긴 내 글은 시트에 반영되기 전까지 잠시 유지 */
     store.guestbook.forEach(function(s){
@@ -3794,7 +3765,7 @@ function renderGuestbook(){
       card.className = 'scard' + (freshIds[s.id] ? ' fresh' : '') + (busy ? ' pending' : '');
       card.innerHTML =
         '<div class="top">' +
-          '<div class="nick"><i>✎</i><span>' + esc(s.nick || '손님') + '</span></div>' +
+          '<div class="nick"><i>✎</i><span>' + esc(s.nick || '아강단') + '</span></div>' +
           '<div class="time">' + fmtTime(s.at) + '</div>' +
         '</div>' +
         '<div class="txt">' + esc(s.text) + '</div>' +
@@ -3837,7 +3808,7 @@ gbSend.addEventListener('click', function(){ sendGuestbook(); });
 function sendGuestbook(){
   var text = gbText.value.trim().slice(0, GB_MAX);
   if (!text) return;
-  var nick = (gbNick.value.trim() || '손님').slice(0, 14);
+  var nick = (gbNick.value.trim() || autoNick()).slice(0, 14);
   var rec = { type:'guestbook', id: uid(), nick: nick, text: text, at: new Date().toISOString() };
   rec.local = true;
   store.guestbook.push(rec);
@@ -3846,9 +3817,9 @@ function sendGuestbook(){
   renderGuestbook();
   audio.click();
   postRemote({ type:rec.type, id:rec.id, nick:rec.nick, text:rec.text, at:rec.at }, function(){
-    toast('전송이 막혔어요 · 잠시 후 다시 남겨주세요', 2600);
+    toast('전송이 막혔어요\n잠시 후 다시 남겨주세요', 2600);
   });
-  toast('방명록에 남겼어요 ✍️ 모두가 볼 수 있어요', 2200);
+  toast('방명록에 남겼어요 ✍️\n모두가 볼 수 있어요', 2200);
 }
 syncGb();
 
@@ -3887,7 +3858,7 @@ document.getElementById('btnCopy').addEventListener('click', function(){
   if (!arr.length){ toast('아직 복사할 방명록이 없어요'); return; }
   var txt = '[재원이네 파티룸 · 방명록] ' + arr.length + '건\n\n';
   arr.forEach(function(s,i){
-    txt += (arr.length - i) + '. ' + (s.nick||'손님') + ' · ' + fmtTime(s.at) + '\n   ' + (s.text||'') + '\n';
+    txt += (arr.length - i) + '. ' + (s.nick||'아강단') + ' · ' + fmtTime(s.at) + '\n   ' + (s.text||'') + '\n';
   });
   var done = function(){ toast('방명록 ' + arr.length + '건을 복사했어요'); };
   if (navigator.clipboard && navigator.clipboard.writeText){
@@ -3938,7 +3909,7 @@ function tryUnlock(){
     adminUnlocked = true;
     closePin(); syncAdminUI(); renderGuestbook();
     audio.chime();
-    toast('관리자 모드 · 내보내기와 삭제를 쓸 수 있어요 🔓', 2400);
+    toast('관리자 모드로 열었어요 🔓\n이제 내보내기와 삭제를 쓸 수 있어요', 2400);
     return;
   }
   pinErr.textContent = v ? 'PIN이 맞지 않아요' : 'PIN을 입력해주세요';
@@ -3972,13 +3943,13 @@ function deleteGuestbook(id){
       delete freshIds[id];
       renderGuestbook();
       audio.chime();
-      toast(label + '을 지웠어요 · 구글 시트에서도 지워졌어요');
+      toast(label + '을 지웠어요\n구글 시트에서도 함께 지웠어요');
     } else {
       renderGuestbook();
       var why;
-      if (res === 'unauthorized') why = 'PIN이 시트와 맞지 않아 지우지 못했어요';
-      else if (res === 'offline') why = '연결이 끊겨 지우지 못했어요 · 잠시 후 다시 시도해 주세요';
-      else why = '지우지 못했어요 · 잠시 후 다시 시도해 주세요';
+      if (res === 'unauthorized') why = 'PIN이 시트와 맞지 않아\n지우지 못했어요';
+      else if (res === 'offline') why = '연결이 끊겨 지우지 못했어요\n잠시 후 다시 시도해 주세요';
+      else why = '지우지 못했어요\n잠시 후 다시 시도해 주세요';
       toast(why, 3200);
       audio.blip(240, 0.14, 'sine', 0.03);
     }
@@ -4013,7 +3984,7 @@ var storySend = document.getElementById('storySend');
 var storyCount = document.getElementById('storyCount');
 
 if (store.nick) nickInput.value = '';
-nickInput.placeholder = '손님 #' + (100 + Math.floor(Math.random()*899));
+nickInput.placeholder = autoNick();
 
 var STORY_MAX = 200;
 function syncMsg(){
@@ -4027,10 +3998,10 @@ storyInput.addEventListener('input', syncMsg);
 storySend.addEventListener('click', function(){
   var text = storyInput.value.trim().slice(0, STORY_MAX);
   if (!text) return;
-  var nick = (nickInput.value.trim() || nickInput.placeholder || '손님').slice(0, 14);
+  var nick = (nickInput.value.trim() || autoNick()).slice(0, 14);
   var rec = { type:'story', id: uid(), nick: nick, tag: '라디오 사연', text: text, at: new Date().toISOString() };
   /* 웹사이트에는 저장도 표시도 하지 않는다 — 구글 시트로만 전달 */
-  postRemote(rec, function(){ toast('전송이 막혔어요 · 잠시 후 다시 보내주세요', 2600); });
+  postRemote(rec, function(){ toast('전송이 막혔어요\n잠시 후 다시 보내주세요', 2600); });
   storyInput.value = ''; syncMsg();
   closeSheets();
   /* 거실 우체통으로 날아가는 연출 */
@@ -4057,7 +4028,7 @@ function petDog(){
   A.heartPop(p.x, p.y + 0.80, p.z, 8);
   audio.woof();
   S.dogPetT = 1.15;
-  toast('강아지가 좋아해요 🐾 꼬리를 흔들어요');
+  toast('강아지가 좋아해요 🐾\n꼬리를 흔들고 있어요');
 }
 function toggleSound(){
   var on = !S.soundOn;
@@ -4079,7 +4050,6 @@ document.getElementById('btnSound').addEventListener('click', function(){
 document.getElementById('btnWrite').addEventListener('click', function(){ audio.click(); openSheet('writeSheet'); });
 document.getElementById('btnBox').addEventListener('click', function(){ audio.click(); openSheet('boxSheet'); });
 document.getElementById('btnBox2').addEventListener('click', function(){ audio.click(); openSheet('boxSheet'); });
-document.getElementById('btnGuide').addEventListener('click', function(){ audio.click(); openSheet('guideSheet'); });
 document.getElementById('btnAdminDock').addEventListener('click', function(){
   if (!adminUnlocked){ audio.click(); openSheet('boxSheet'); }
   adminToggle();
@@ -4094,7 +4064,7 @@ function toggleDim(){
   A.lampLight.intensity = dimOn ? 0.55 : 1.35;
   A.renderer.toneMappingExposure = dimOn ? 0.96 : 1.12;
   audio.blip(dimOn?330:520, 0.2, 'sine', 0.05);
-  toast(dimOn ? '조명을 낮췄어요 · 촛불만 남았어요' : '조명을 밝혔어요');
+  toast(dimOn ? '조명을 낮췄어요\n촛불만 남았어요' : '조명을 밝혔어요');
 }
 
 /* ══════════ 사진 ══════════ */
@@ -4147,7 +4117,7 @@ function takePhoto(){
   var a = document.createElement('a');
   a.href = url; a.download = '재원이네_파티_' + Date.now() + '.png';
   document.body.appendChild(a); a.click(); a.remove();
-  toast('사진을 저장했어요 ✦ 길게 눌러 저장해도 돼요', 2800);
+  toast('사진을 저장했어요 ✦\n길게 눌러 저장해도 돼요', 2800);
   audio.blip(1200, 0.25, 'sine', 0.05);
 }
 document.getElementById('btnPhoto').addEventListener('click', function(){ audio.click(); takePhoto(); });
@@ -4255,7 +4225,7 @@ function handleTap(ev){
     A.burst(fp.clone().add(new T.Vector3(0, 0.62, 0.45)),
       ['#ffb457','#ffd98a','#ff7a28','#ffe9b8'], 44, 2.3, 0.14, 1.2, -0.7);
     audio.blip(280, 0.22, 'sine', 0.05);
-    toast('장작이 활활 타오릅니다 🔥', 2200);
+    toast('장작이 활활 타오르고 있어요 🔥', 2200);
     return;
   }
   if (k === 'speaker') { audio.init(); toggleSound(); return; }
@@ -4263,7 +4233,7 @@ function handleTap(ev){
   if (k === 'guestbookNote') { openSheet('boxSheet'); return; }
   if (k === 'clock') { audio.chime(); toast('우리 이제 만날 시간이야! ⏰', 2600); return; }
   if (k === 'pendant') { toggleDim(); return; }
-  if (k === 'sofa') { toast('재원이가 앉아 있던 자리 · 쿠션은 아직 따뜻해요'); return; }
+  if (k === 'sofa') { toast('재원이가 앉아 있던 자리예요\n쿠션은 아직 따뜻하네요'); return; }
   if (k === 'table') { toast('케이크 촛불이 아직 꺼지지 않았어요 🎂'); return; }
   if (k === 'lamp') { toggleDim(); return; }
   if (k === 'reindeer') {
@@ -4274,7 +4244,7 @@ function handleTap(ev){
       A.heartPop(rp.x, rp.y + 0.18, rp.z, 7);
       A.burst(rp.clone(), ['#ff5a3c','#ff9d7a','#ffe1c4'], 26, 1.6, 0.10, 0.9, -0.4);
     }
-    toast('Happy New Year! 🎉 순록 코가 환하게 빛나요', 2600);
+    toast('Happy New Year! 🎉\n순록 코가 환하게 빛나요', 2600);
     return;
   }
   if (k === 'tiger') { audio.blip(520, 0.14, 'triangle', 0.05); toast('어흥! 호랑이 인형이 눈을 꿈뻑여요 🐯', 2400); return; }
