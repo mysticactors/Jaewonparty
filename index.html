@@ -1707,17 +1707,17 @@ function stringLights(A, B, sag, count, parent, colA, colB){
   addBox(g, 0.30, 0.74, 1.32, VELVET2, 1.55, 0.74, 0);
   /* 좌석 윗면(y=0.78)에 올려 등 쿠션(앞면 z=-0.27)에 기대이게 — 파묻히지 않게 */
   // 액센트 쿠션 — 딥그린 벨벳 (왼쪽 끝)
-  var cp = addBox(g, 0.52, 0.52, 0.16, C.grn2, -1.06, 1.05, -0.10, {roughness:1});
+  var cp = addBox(g, 0.52, 0.52, 0.16, C.grn2, -1.06, 1.04, -0.10, {roughness:1});
   cp.rotation.z = 0.16; cp.rotation.x = -0.26;
   // 골드 원형 쿠션 — 앞자리 오른쪽에 살짝 기대어
-  var cpg = mesh(GEO.sph(0.24, 10), M(C.gold2, {roughness:0.42, metalness:0.12}), 0.78, 1.00, 0.28, g);
+  var cpg = mesh(GEO.sph(0.24, 10), M(C.gold2, {roughness:0.42, metalness:0.12}), 0.78, 0.985, 0.30, g);
   cpg.scale.set(1.0, 1.0, 0.44); cpg.rotation.z = -0.14; cpg.rotation.x = -0.16;
   // 체크 쿠션 — 오른쪽 끝, 팔걸이에 살짝 기대어
   var plaidMat = new T.MeshStandardMaterial({map:plaidTex, roughness:1, metalness:0});
   var cp2 = new T.Mesh(GEO.sph(0.25, 10), plaidMat);
-  cp2.position.set(1.14, 1.02, -0.10); cp2.scale.set(1.0, 1.0, 0.44); cp2.rotation.z = -0.22; cp2.rotation.x = -0.20; g.add(cp2);
+  cp2.position.set(1.14, 1.005, -0.10); cp2.scale.set(1.0, 1.0, 0.44); cp2.rotation.z = -0.22; cp2.rotation.x = -0.20; g.add(cp2);
   // 코랄 벨벳 쿠션 — 하트 오른쪽
-  var cp3 = mesh(GEO.sph(0.21, 10), M(C.redWarm, {roughness:1}), 0.50, 0.99, -0.14, g);
+  var cp3 = mesh(GEO.sph(0.21, 10), M(C.redWarm, {roughness:1}), 0.50, 0.975, -0.14, g);
   cp3.scale.set(1.0, 1.0, 0.42); cp3.rotation.z = 0.14; cp3.rotation.x = -0.22;
   // 체크 담요 — 좌석 위에 두툼하게 접어 올려 둔 모습 (앞자리 왼쪽)
   var throwMat = new T.MeshStandardMaterial({map:plaidTex, roughness:1, metalness:0, side:T.DoubleSide});
