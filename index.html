@@ -1795,8 +1795,8 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
   addBox(g, 0.44, 0.012, 1.90, C.red, 0, topY+0.03, 0, {roughness:1});
   addBox(g, 0.34, 0.014, 1.78, C.grn, 0, topY+0.038, 0, {roughness:1});
 
-  // 케이크
-  var cake = new T.Group(); cake.position.set(-0.30, topY+0.03, 0.00); g.add(cake);
+  // 케이크 — 중앙에서 살짝 뒤·왼쪽으로 물려 앞자리를 비운다
+  var cake = new T.Group(); cake.position.set(-0.26, topY+0.03, -0.16); cake.scale.setScalar(0.94); g.add(cake);
   mesh(GEO.cyl(0.34,0.36,0.20,16), M('#c79063'), 0, 0.10, 0, cake);
   mesh(GEO.cyl(0.34,0.34,0.02,16), M('#f6e9d2'), 0, 0.20, 0, cake);
   mesh(GEO.cyl(0.27,0.31,0.17,16), M('#f0d3b0'), 0, 0.30, 0, cake);
@@ -1817,7 +1817,7 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
   }
 
   // 샴페인 병
-  var btl = new T.Group(); btl.position.set(0.52, topY+0.03, -0.28); g.add(btl);
+  var btl = new T.Group(); btl.position.set(0.56, topY+0.03, -0.34); g.add(btl);
   mesh(GEO.cyl(0.10,0.11,0.36,12), M('#2f4636', {roughness:0.4, metalness:0.15}), 0, 0.18, 0, btl);
   mesh(GEO.cyl(0.055,0.10,0.14,12), M('#2f4636', {roughness:0.4, metalness:0.15}), 0, 0.42, 0, btl);
   mesh(GEO.cyl(0.048,0.05,0.16,10), M('#2f4636', {roughness:0.4, metalness:0.15}), 0, 0.55, 0, btl);
@@ -1828,7 +1828,7 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
   // 샴페인 잔
   var glassMat = new T.MeshStandardMaterial({color:0xd8e6ea, roughness:0.12, metalness:0.10,
     transparent:true, opacity:0.55, flatShading:true});
-  [[-0.55,0.55],[0.58,0.58],[0.88,-0.06]].forEach(function(p){
+  [[0.88,-0.48],[0.44,-0.80],[0.86,-0.12]].forEach(function(p){
     var gl = new T.Group(); gl.position.set(p[0], topY+0.03, p[1]); g.add(gl);
     mesh(GEO.cyl(0.035,0.045,0.02,10), glassMat, 0, 0.01, 0, gl);
     mesh(GEO.cyl(0.012,0.012,0.14,6), glassMat, 0, 0.09, 0, gl);
@@ -1836,22 +1836,22 @@ var TABLE = new T.Vector3(0.62, 0, 0.82);
     mesh(GEO.cyl(0.075,0.075,0.01,12), M('#f5e2b8', {transparent:true, opacity:0.65}), 0, 0.26, 0, gl);
   });
 
-  // 쿠키 접시 — 노트가 빠진 앞자리로 옮겨 케이크와 간격 확보
-  mesh(GEO.cyl(0.30,0.30,0.025,16), M('#efe4d2'), 0.06, topY+0.05, 0.72, g);
+  // 쿠키 접시 — 앞자리 가운데, 민초(왼쪽)·홈런볼(오른쪽)과 각각 한 뼘씩 띄운다
+  mesh(GEO.cyl(0.26,0.26,0.025,16), M('#efe4d2'), 0.02, topY+0.05, 0.60, g);
   for (var k=0;k<5;k++){
     var a = k*1.3;
-    mesh(GEO.cyl(0.075,0.075,0.03,8), M(k%2?'#c9975c':'#b8834a'),
-      0.06+Math.cos(a)*0.12, topY+0.08, 0.72+Math.sin(a)*0.12, g);
+    mesh(GEO.cyl(0.068,0.068,0.03,8), M(k%2?'#c9975c':'#b8834a'),
+      0.02+Math.cos(a)*0.105, topY+0.08, 0.60+Math.sin(a)*0.105, g);
   }
   // 귤 한 그릇 — 왼쪽 뒤로 물려 케이크와 겹치지 않게
-  var bowl = mesh(GEO.cyl(0.24,0.17,0.14,14), M('#d9c9b0'), -0.78, topY+0.10, -0.42, g);
+  var bowl = mesh(GEO.cyl(0.22,0.16,0.14,14), M('#d9c9b0'), -0.84, topY+0.10, -0.36, g);
   [[0,0],[0.10,0.06],[-0.09,0.05],[0.02,-0.09]].forEach(function(p){
-    mesh(GEO.sph(0.085,9), M('#e08a3c'), -0.78+p[0], topY+0.17, -0.42+p[1], g);
+    mesh(GEO.sph(0.082,9), M('#e08a3c'), -0.84+p[0], topY+0.17, -0.36+p[1], g);
   });
-  // 초 한 자루
-  var jar = mesh(GEO.cyl(0.10,0.10,0.18,10), M('#e8dcc4', {transparent:true, opacity:0.85}), -0.05, topY+0.13, -0.52, g);
+  // 초 한 자루 — 케이크 오른께·샴페인 병 사이의 빈 틈에 세운다
+  var jar = mesh(GEO.cyl(0.10,0.10,0.18,10), M('#e8dcc4', {transparent:true, opacity:0.85}), 0.02, topY+0.13, -0.66, g);
   var fl = new T.Mesh(GEO.cone(0.03,0.08,6), new T.MeshBasicMaterial({color:0xffcf8a}));
-  fl.position.set(-0.05, topY+0.26, -0.52); g.add(fl); refs.flames.push(fl);
+  fl.position.set(0.02, topY+0.26, -0.66); g.add(fl); refs.flames.push(fl);
 
   // 바닥 방석 3개 — 모두 러그 안쪽으로 들어오게 좌표 조정
   [[-0.62, 1.26, 0.4], [1.76, 0.42, -0.6], [-1.55, -1.05, 0.2]].forEach(function(p){
@@ -2726,11 +2726,13 @@ var tvChannelTex = (function(){
   var snowGlass = new T.MeshStandardMaterial({color:0xd7eaff, roughness:0.05, metalness:0.02,
     emissive:0x9fc6e8, emissiveIntensity:0.28,
     transparent:true, opacity:0.34, flatShading:true, side:T.DoubleSide, depthWrite:false});
-  /* 작은 소품도 손가락으로 눌리도록 넉넉한 투명 픽 프록시 */
-  function pickProxy(parent, r, x, y, z){
+  /* 작은 소품도 손가락으로 눌리도록 넉넉한 투명 픽 프록시
+     (가로는 이웃 소품과 겹치지 않을 만큼만, 세로는 손가락이 살짝 위를 짚어도 잡히게 늘린다) */
+  function pickProxy(parent, r, x, y, z, ystretch){
     var p = new T.Mesh(GEO.sph(r, 8),
       new T.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.001, depthWrite:false}));
     p.position.set(x||0, y||0, z||0);
+    if (ystretch) p.scale.y = ystretch;
     p.userData.proxy = true; p.castShadow = false; p.receiveShadow = false;
     parent.add(p); return p;
   }
@@ -2739,8 +2741,9 @@ var tvChannelTex = (function(){
   var tb = new T.Group(); tb.position.copy(TABLE); tb.scale.setScalar(1.14); room.add(tb);
   var TOPY = 0.945;                     /* 테이블보 윗면 */
 
-  /* ①-A 민트초코 아이스크림 컵 */
-  var mint = new T.Group(); mint.position.set(-0.46, TOPY, 0.88); mint.rotation.y = -0.36; tb.add(mint);
+  /* ①-A 민트초코 아이스크림 컵 — 앞자리 왼쪽 끝, 쿠키 접시와 한 뼘 이상 띄움 */
+  var mint = new T.Group(); mint.position.set(-0.62, TOPY, 0.74); mint.rotation.y = -0.30;
+  mint.scale.setScalar(1.20); tb.add(mint);
   mesh(GEO.cyl(0.112, 0.085, 0.150, 12), M('#fff6e6', {roughness:0.72}), 0, 0.076, 0, mint);
   mesh(GEO.cyl(0.113, 0.098, 0.052, 12), M('#8fd9bb', {roughness:0.7}), 0, 0.090, 0, mint);
   mesh(GEO.cyl(0.118, 0.118, 0.016, 12), M('#f2e0c6', {roughness:0.7}), 0, 0.156, 0, mint);
@@ -2754,11 +2757,12 @@ var tvChannelTex = (function(){
     mesh(GEO.sph(0.016, 6), M('#3b2418', {roughness:0.8}),
       Math.cos(ca)*cr, cy, Math.sin(ca)*cr, mint);
   }
-  pickProxy(mint, 0.135, 0, 0.20, 0);
+  pickProxy(mint, 0.150, 0, 0.20, 0, 1.40);
   mint.userData.pick = 'mintChoco'; refs.mintChoco = mint;
 
-  /* ①-B 홈런볼 봉지 */
-  var hb = new T.Group(); hb.position.set(-0.235, TOPY, 0.985); hb.rotation.y = 0.30; tb.add(hb);
+  /* ①-B 홈런볼 봉지 — 앞자리 오른쪽 끝, 민초와 스크린상 30px 이상 벌어진다 */
+  var hb = new T.Group(); hb.position.set(0.72, TOPY, 0.58); hb.rotation.y = -0.34;
+  hb.scale.setScalar(1.22); tb.add(hb);
   addBox(hb, 0.185, 0.140, 0.128, '#f7dfa6', 0, 0.070, 0, {roughness:0.86});
   addBox(hb, 0.192, 0.018, 0.135, '#eccf92', 0, 0.148, 0, {roughness:0.88});
   addBox(hb, 0.190, 0.034, 0.133, '#e2705f', 0, 0.082, 0, {roughness:0.82});
@@ -2771,11 +2775,11 @@ var tvChannelTex = (function(){
   [[-0.045,0.168,0.012],[0.010,0.176,0.020],[0.055,0.164,-0.010]].forEach(function(p){
     mesh(GEO.sph(0.034, 9), M('#f0d79c', {roughness:0.62, flatShading:false}), p[0], p[1], p[2], hb);
   });
-  pickProxy(hb, 0.115, 0, 0.095, 0);
+  pickProxy(hb, 0.128, 0, 0.100, 0, 1.40);
   hb.userData.pick = 'homerun'; refs.homerun = hb;
 
-  /* ③ 소주잔 한 잔 */
-  var sj = new T.Group(); sj.position.set(0.90, TOPY, 0.33); tb.add(sj);
+  /* ③ 소주잔 한 잔 — 케이크와 샴페인 병 사이, 러너 위 */
+  var sj = new T.Group(); sj.position.set(0.28, TOPY, -0.14); tb.add(sj);
   mesh(GEO.cyl(0.052, 0.043, 0.128, 12), glassMat, 0, 0.064, 0, sj);
   mesh(GEO.cyl(0.055, 0.055, 0.007, 12), glassMat, 0, 0.128, 0, sj);
   mesh(GEO.cyl(0.047, 0.039, 0.070, 12),
@@ -2784,7 +2788,7 @@ var tvChannelTex = (function(){
   mesh(GEO.cyl(0.047, 0.047, 0.005, 12),
     new T.MeshStandardMaterial({color:0xf6fdff, roughness:0.05, transparent:true, opacity:0.9}),
     0, 0.074, 0, sj);
-  pickProxy(sj, 0.105, 0, 0.070, 0);
+  pickProxy(sj, 0.100, 0, 0.075, 0, 1.35);
   sj.userData.pick = 'soju'; refs.soju = sj;
 
   /* ② 소파 — 파란색 하트 쿠션 (소파와 같은 로컬 좌표계) */
