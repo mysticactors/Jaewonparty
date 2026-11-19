@@ -571,6 +571,9 @@
 
 </style>
 </head>
+<script>window.__err=[];function __dump(){document.documentElement.setAttribute('data-err', window.__err.join(' || '));}
+window.onerror=function(m,src,l,c,e){window.__err.push(m+' @'+l+':'+c+(e&&e.stack?(' :: '+String(e.stack).split('\n')[1]||''):''));__dump();};
+window.addEventListener('unhandledrejection',function(e){window.__err.push('rej:'+((e.reason&&e.reason.message)||e.reason));__dump();});</script>
 <body>
 <div id="shell">
   <div id="stage">
