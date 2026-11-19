@@ -353,8 +353,10 @@
       inset 0 16px 26px -16px rgba(150,92,90,.38)}
 
   /* ② 앞면 — 왼쪽 날개 · 오른쪽 날개 · 아래 포켓이 겹쳐 만드는 종이 접힘 */
+  /* iOS 사파리에서 overflow:hidden+radius 클립이 필터 자식과 부딪혀 모서리가 씹히는 걸 막으려고
+     라운드는 border-radius 대신 clip-path(inset round)로 자른다 — 결과 픽셀은 동일하다. */
   .env-front{position:absolute;inset:0;z-index:3;border-radius:var(--env-r);
-    overflow:hidden}
+    -webkit-clip-path:inset(0 round var(--env-r));clip-path:inset(0 round var(--env-r))}
   .env-front::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
     box-shadow:inset 0 -12px 20px -14px rgba(140,86,82,.28)}
   .env-wing{position:absolute;inset:0;pointer-events:none}
@@ -375,15 +377,17 @@
   .env-sheet-r{-webkit-clip-path:polygon(100% 0,50% 47%,100% 100%);clip-path:polygon(100% 0,50% 47%,100% 100%);
     background:linear-gradient(260deg,#fdf7f0 0%,#fbefe4 46%,#f5e1d3 100%)}
 
-  /* ③ 윗덮개 — 접힌 종이 한 장 (그림자는 바깥 wrapper, 둥근 모서리는 안쪽 클립) */
+  /* ③ 윗덮개 — 접힌 종이 한 장 (그림자는 바깥 wrapper, 윗변 둥근 모서리는 종이 path 안에) */
   .env-flap{position:absolute;left:0;top:0;width:100%;height:56%;z-index:4;
     transform-origin:50% 0;transform:rotateX(0deg);
     filter:drop-shadow(0 1px 0 rgba(190,132,126,.42)) drop-shadow(0 6px 14px rgba(58,28,34,.18));
     transition:transform .45s cubic-bezier(.55,.06,.35,1)}
-  .env-flap-clip{position:absolute;inset:0;border-radius:var(--env-r) var(--env-r) 0 0;
-    overflow:hidden;pointer-events:none}
+  /* 윗덮개 모서리(윗변 좌우 14px 라운드)는 border-radius+overflow 클립이 아니라
+     종이 path 자체에 새겨 iOS 사파리에서도 계단처럼 씹히지 않는다. */
+  .env-flap-clip{position:absolute;inset:0;pointer-events:none}
   .env-flap-paper{position:absolute;inset:0;
-    -webkit-clip-path:polygon(0 0,100% 0,50% 100%);clip-path:polygon(0 0,100% 0,50% 100%);
+    -webkit-clip-path:polygon(98.443% 3.502px, 98.356% 3.275px, 98.037% 2.532px, 97.699% 1.876px, 97.343% 1.312px, 96.972% 0.844px, 96.589% 0.477px, 96.197% 0.213px, 95.799% 0.053px, 95.398% 0px, 4.602% 0px, 4.201% 0.053px, 3.803% 0.213px, 3.411% 0.477px, 3.028% 0.844px, 2.657% 1.312px, 2.301% 1.876px, 1.963% 2.532px, 1.644% 3.275px, 1.557% 3.502px, 50% 100%);
+    clip-path:polygon(98.443% 3.502px, 98.356% 3.275px, 98.037% 2.532px, 97.699% 1.876px, 97.343% 1.312px, 96.972% 0.844px, 96.589% 0.477px, 96.197% 0.213px, 95.799% 0.053px, 95.398% 0px, 4.602% 0px, 4.201% 0.053px, 3.803% 0.213px, 3.411% 0.477px, 3.028% 0.844px, 2.657% 1.312px, 2.301% 1.876px, 1.963% 2.532px, 1.644% 3.275px, 1.557% 3.502px, 50% 100%);
     background:
       linear-gradient(180deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 10%),
       linear-gradient(176deg,#fffefa 0%,#fdf4ea 58%,#f8e5d7 100%);
