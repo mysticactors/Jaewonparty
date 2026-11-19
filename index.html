@@ -3675,6 +3675,7 @@ function anim(t, dt){
 window.APP = {
   T:T, scene:scene, camera:camera, renderer:renderer, world:world, room:room, refs:refs,
   ctl:ctl, applyCamera:applyCamera, resize:resize, anim:anim, S:S, fx:fx, hearts:hearts,
+  panBy:panBy, home:HOME_TARGET,
   burst:burst, heartPop:heartPop, dotTexture:dotTexture, warmTexture:warmTexture, heartTexture:heartTexture,
   makeDog:makeDog, treeLight:treeLight, pendantLight:pendantLight, lampLight:lampLight,
   fireLight:fireLight, fireLight2:fireLight2, mantelLight:mantelLight, lanternLight:lanternLight,
@@ -3705,6 +3706,7 @@ var A = window.APP, T = A.T;
 var stage = document.getElementById('stage');
 var canvas = document.getElementById('cv');
 var renderer = A.renderer, scene = A.scene, camera = A.camera, ctl = A.ctl;
+var panBy = A.panBy, HOME_TARGET = A.home;   /* 카메라 모듈의 패닝·홈 중심을 이 스코프로 */
 var refs = A.refs, S = A.S, room = A.room;
 var fx = A.fx, hearts = A.hearts;
 var tip = document.getElementById('tip');
