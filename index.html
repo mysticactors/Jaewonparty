@@ -2707,9 +2707,10 @@ function makeTiger(){
   var body = new T.Mesh(GEO.box(0.40, 0.014, 0.27), envMat);
   g.add(body);
   /* 서류는 인쇄면(찢긴 윗변 + 흰 종이 띠)으로 표현 — 덧대는 판은 인쇄를 가려서 두지 않는다 */
-  var p = new T.Mesh(GEO.sph(0.14,8),
+  /* 바닥에 누운 얇은 봉투라 손가락이 살짝 위를 짚어도 잡히게 넉넉한 픽 프록시 */
+  var p = new T.Mesh(GEO.sph(0.20,10),
     new T.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.001, depthWrite:false}));
-  p.position.set(0.02, 0.03, 0); p.scale.set(1.5,0.5,1.1);
+  p.position.set(0.02, 0.075, 0); p.scale.set(1.45,0.75,1.15);
   p.userData.proxy = true; p.castShadow = false; p.receiveShadow = false;
   g.add(p);
   g.userData.pick = 'mintEnvelope'; refs.mintEnv = g;
