@@ -342,41 +342,34 @@
   .envelope:hover{transform:translateY(-3px)}
   .envelope:active{transform:translateY(1px) scale(.99)}
   .env-back{position:absolute;inset:0;z-index:1;border-radius:14px;
-    background:linear-gradient(168deg,#f3ded5 0%,#ecd0c4 52%,#e6c4b6 100%);
-    box-shadow:0 24px 54px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.38)}
-  /* 봉투 외곽 실선 — 얇고 선명한 로즈브라운 테두리 */
-  .env-rim{position:absolute;inset:0;z-index:5;pointer-events:none;
-    border:1.5px solid rgba(178,114,108,.78);border-radius:14px;
-    box-shadow:inset 0 0 0 .5px rgba(255,250,246,.45)}
-  .env-front{position:absolute;inset:0;z-index:3;border-radius:14px;overflow:hidden;
-    background:linear-gradient(172deg,#fffaf6 0%,#fdf1e8 52%,#fcece2 100%);
+    background:linear-gradient(168deg,#fbe7e2 0%,#f8ded6 60%,#f2d2c7 100%);
+    box-shadow:0 24px 54px rgba(0,0,0,.5),inset 0 0 0 1.5px rgba(255,255,255,.7)}
+  .env-front{position:absolute;inset:0;z-index:3;border-radius:0 0 14px 14px;
+    background:linear-gradient(172deg,#fff8f1 0%,#fdeee4 48%,#f9ddcd 100%);
     clip-path:polygon(0 0,50% 44%,100% 0,100% 100%,0 100%);
-    filter:drop-shadow(0 -1px 1px rgba(150,92,86,.14))}
+    filter:drop-shadow(0 -1.5px 0 rgba(232,190,178,.9))}
   .env-front::after{content:"";position:absolute;left:12%;right:12%;bottom:10px;height:1px;
-    background:linear-gradient(90deg,transparent,rgba(178,114,108,.3),transparent)}
-  .env-flap{position:absolute;left:0;top:0;width:100%;height:56%;z-index:4;overflow:hidden;
-    border-radius:14px 14px 0 0;
+    background:linear-gradient(90deg,transparent,rgba(205,160,150,.5),transparent)}
+  .env-flap{position:absolute;left:0;top:0;width:100%;height:56%;z-index:4;
     transform-origin:50% 0;transform:rotateX(0deg);
-    transition:transform .45s cubic-bezier(.55,.06,.35,1);
-    clip-path:polygon(0 0,100% 0,50% 100%);
-    background:linear-gradient(178deg,#fffdf9 0%,#fdf2ea 60%,#fcece2 100%);
-    filter:drop-shadow(0 2px 3px rgba(80,40,44,.16))}
-  /* 접힘선 벡터 레이어 — 봉투 면 위에 얇은 실선 */
-  .env-front svg,.env-flap svg{position:absolute;inset:0;width:100%;height:100%;
-    display:block;pointer-events:none}
-  .env-front svg{z-index:1}
-  .env-flap svg{z-index:2}
+    transition:transform .45s cubic-bezier(.55,.06,.35,1)}
+  /* 종이 덮개 — 실루엣 그림자(접힘 음영)는 잘리지 않게 바깥 랩에, 삼각형 종이는 안쪽에 */
+  .env-paper-wrap{position:absolute;inset:0;pointer-events:none;
+    filter:drop-shadow(0 1.2px 0 rgba(186,128,120,.52)) drop-shadow(0 2px 3px rgba(148,86,82,.11)) drop-shadow(0 8px 16px rgba(64,32,38,.17))}
+  .env-paper{position:absolute;inset:0;border-radius:14px 14px 0 0;
+    -webkit-clip-path:polygon(0 0,100% 0,50% 100%);clip-path:polygon(0 0,100% 0,50% 100%);
+    background:linear-gradient(178deg,rgba(255,255,255,0) 52%,rgba(196,138,132,.12) 100%),
+      linear-gradient(178deg,#fffdf9 0%,#fdeee5 62%,#f8dccf 100%)}
   #invite.open .env-flap{transform:rotateX(180deg)}
   .env-flap.under{z-index:1}
-  .env-seal{position:absolute;left:50%;top:60%;z-index:3;transform:translate(-50%,-50%);
+  .env-seal{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);
     width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
     font-family:Georgia,"Times New Roman",serif;font-size:19px;font-weight:700;color:#fff6f2;
     background:radial-gradient(circle at 34% 30%,#dd97a4 0%,#cb7286 52%,#c4666d 100%);
-    box-shadow:0 2px 0 rgba(160,95,105,.4),inset 0 0 0 1.5px rgba(255,236,232,.55),
-      0 0 0 1px rgba(150,85,95,.35),0 4px 12px rgba(185,105,115,.34);
+    box-shadow:0 2px 0 rgba(160,95,105,.4),inset 0 0 0 1.5px rgba(255,236,232,.55),0 4px 12px rgba(185,105,115,.34);
     transition:opacity .28s ease,transform .28s ease}
   .env-seal::after{content:"";position:absolute;inset:-8px;border-radius:50%;
-    border:1px dashed rgba(178,114,108,.45)}
+    border:1px dashed rgba(232,190,178,.55)}
   #invite.open .env-seal{opacity:0;transform:translate(-50%,-50%) scale(.55) rotate(-14deg)}
   .iv-letter{position:absolute;left:50%;top:50%;z-index:2;width:min(88vw,330px);
     transform:translate(-50%,calc(-50% + 7vh)) scale(.5);opacity:0;pointer-events:none;
@@ -640,22 +633,11 @@
         <p class="env-from">FROM. 재원</p>
         <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="편지 봉투 · 눌러서 열어보세요">
           <div class="env-back"></div>
-          <div class="env-front">
-            <svg viewBox="0 0 320 211" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-              <!-- 앞면 상단 V-입구 -->
-              <path d="M1.4 1.9 L160 96.6 L318.6 1.9" fill="none" stroke="rgba(178,114,108,.62)" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"/>
-              <!-- 아래 양 모서리 → 중앙으로 모이는 이음선 -->
-              <path d="M1.4 209.6 L160 124 L318.6 209.6" fill="none" stroke="rgba(178,114,108,.55)" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
+          <div class="env-front"></div>
           <div class="env-flap" id="envFlap">
-            <svg viewBox="0 0 320 118" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-              <!-- 위 모서리 두 곳 → 아래 중앙 V자 접힘선 -->
-              <path d="M2 1.6 L160 114.6 L318 1.6" fill="none" stroke="rgba(178,114,108,.74)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <div class="env-paper-wrap" aria-hidden="true"><div class="env-paper"></div></div>
             <span class="env-seal" aria-hidden="true">J</span>
           </div>
-          <div class="env-rim" aria-hidden="true"></div>
         </div>
         <p class="env-hint">봉투를 눌러 열어보세요 ✉️</p>
       </div>
