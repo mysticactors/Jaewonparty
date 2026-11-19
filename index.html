@@ -383,7 +383,7 @@
   .env-flap{position:absolute;left:0;top:0;width:100%;height:56%;z-index:4;
     transform-origin:50% 0;transform:rotateX(0deg);
     filter:drop-shadow(0 1px 0 rgba(190,132,126,.42)) drop-shadow(0 6px 14px rgba(58,28,34,.18));
-    transition:transform .52s cubic-bezier(.42,.06,.24,1),opacity .30s ease .34s}
+    transition:transform .52s cubic-bezier(.42,.06,.24,1)}
   /* 윗덮개 모서리(윗변 좌우 14px 라운드)는 border-radius+overflow 클립이 아니라
      종이 path 자체에 새겨 iOS 사파리에서도 계단처럼 씹히지 않는다. */
   .env-flap-clip{position:absolute;inset:0;pointer-events:none}
@@ -404,8 +404,22 @@
       linear-gradient(178deg,#f7e2d5 0%,#f2d7c9 46%,#ead0c2 100%);
     opacity:0;transition:opacity .26s ease .14s}
   #invite.open .env-flap-paper::after{opacity:1}
-  /* 덮개는 젖혀지며 서서히 사라진다 — 초대장이 올라온 뒤 봉투 위로 종이 삼각형이 남지 않게 */
-  #invite.open .env-flap{transform:rotateX(180deg);opacity:0}
+  #invite.open .env-flap{transform:rotateX(180deg)}
+  /* ── 열린 봉투의 접힘선 마감 ──
+     닫힌 상태의 윗변 14px 라운드는 봉투 모서리용이다. 덮개가 180° 젖혀지면
+     그 라운드와 덮개 밑변이 만나 양옆이 안으로 파이는 핀치가 생기고, 1px 흰 하이라이트가
+     접힘선에 실선처럼 떠서 종이가 두 조각처럼 보인다. 열린 동안만 모서리를 펴고
+     하이라이트를 없애 접힘선이 한 장의 종이처럼 이어지게 한다. */
+  #invite.open .env-flap-paper{-webkit-clip-path:polygon(0 0,100% 0,50% 100%);clip-path:polygon(0 0,100% 0,50% 100%);
+    box-shadow:none}
+  #invite.open .env-back{border-radius:0 0 var(--env-r) var(--env-r);
+    box-shadow:0 24px 52px rgba(0,0,0,.48),
+      inset 0 0 0 1px rgba(213,161,152,.42),
+      inset 0 16px 26px -16px rgba(150,92,90,.38)}
+  #invite.open .env-front{-webkit-clip-path:inset(0 round 0 0 var(--env-r) var(--env-r));
+    clip-path:inset(0 round 0 0 var(--env-r) var(--env-r))}
+  /* 접힘선 위쪽(젖혀진 덮개 쪽)에 부드러운 접힘 그늘만 — 흰 실선 대신 */
+  #invite.open .env-flap{filter:drop-shadow(0 -3px 7px rgba(96,54,56,.16))}
   .env-flap.under{z-index:1}
 
   /* ④ 로즈 왁스 실링 — 바깥 왁스 림 + 안쪽 눌린 링 + 샴페인 로즈 그라데이션 */
