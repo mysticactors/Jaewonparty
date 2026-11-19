@@ -804,7 +804,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = T.PCFSoftShadowMap;
 
 var scene = new T.Scene();
-var camera = new T.PerspectiveCamera(27, 0.5625, 1.2, 420);
+var camera = new T.PerspectiveCamera(27, 0.5625, 0.5, 420);
 
 /* ── 하늘 그라데이션 ──────────────────────────────────── */
 var skyTex = (function(){
@@ -3415,11 +3415,28 @@ var ctl = {
   tgoal: new T.Vector3(0, 2.55, 0.05)   /* 패닝으로 옮긴 시선 중심(부드럽게 따라간다) */
 };
 var HOME_TARGET = new T.Vector3(0, 2.55, 0.05);
-var PAN_Y_MIN = 0.0, PAN_Y_MAX = 3.6, PAN_XZ = 3.6;      /* y=0 → 바닥면까지 내려갈 수 있게 */
-var POL_MIN = 0.30, POL_MAX = 1.48;                      /* 위에서 내려보는 한계 / 수평에 가까운 한계 */
+var HOME_AZ = 0.60, HOME_POL = 1.02;                     /* 기본 구도(처음 화면) */
+var PAN_Y_MIN = 0.0, PAN_Y_MAX = 4.5, PAN_XZ = 4.8;      /* y=0 → 바닥면, x/z ±4.8 → 거실 바닥 구석 프랍까지 끌어올 수 있게 */
+var POL_MIN = 0.15, POL_MAX = 1.52;                      /* 위에서 내려보는 한계 / 바닥 눈높이 */
+/* 확대 최소 거리 — 방 안 프랍(민트 봉투·호랑이·우체통) 바로 앞까지. 화면 크기/비율에
+   따라 base 가 크게 달라지므로 절대 거리(ZOOM_NEAR)를 바닥값으로 둔다. */
+var ZOOM_NEAR = 1.9;
+function minDist(){ return Math.max(ZOOM_NEAR, ctl.base * 0.022); }
+/* 좌우 회전 폭 — 멀리서 돌면 방 바깥벽 뒷면이 시야를 통째로 가리므로 멀 때는 좁게,
+   확대해서 방 안으로 들어오면 벽이 시야 밖으로 밀려나므로 넓게(반바퀴 이상) 허용한다. */
+var AZ_FAR_D = 18, AZ_NEAR_D = 6.5;
+var AZ_MIN_FAR = -0.95, AZ_MAX_FAR = 2.02, AZ_MIN_NEAR = -2.05, AZ_MAX_NEAR = 2.45;
+function azRange(d){
+  var t = (AZ_FAR_D - d) / (AZ_FAR_D - AZ_NEAR_D);
+  t = Math.max(0, Math.min(1, t));
+  return [AZ_MIN_FAR + (AZ_MIN_NEAR - AZ_MIN_FAR) * t, AZ_MAX_FAR + (AZ_MAX_NEAR - AZ_MAX_FAR) * t];
+}
 /* 확대한 뒤 아래를 보고 싶을 때 시선 중심을 옮긴다(패닝).
    손가락/마우스로 끈 픽셀만큼 장면이 따라오도록 거리 투영으로 월드 단위를 계산한다 —
-   줌인할수록 같은 픽셀이 작은 거리를 움직여 감도가 자연스러워진다. */
+   줌인할수록 같은 픽셀이 작은 거리를 움직여 감도가 자연스러워진다.
+   가로는 카메라의 right, 세로는 카메라의 up(화면 위쪽) 방향으로 옮긴다. up 을 쓰면
+   위에서 내려보다가 위아래로 끌 때 시선이 바닥을 가로질러 앞뒤(깊이)로도 움직인다 —
+   바닥 구석에 떨어진 프랍도 화면 한가운데로 앉힐 수 있다. */
 function panBy(dx, dy){
   var b = stageBox();
   var perPx = 2 * ctl.tdist * Math.tan(camera.fov * Math.PI/360) / b.h;
@@ -3427,11 +3444,19 @@ function panBy(dx, dy){
   var right = new T.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
   right.y = 0;
   if (right.lengthSq() > 1e-6) right.normalize(); else right.set(1, 0, 0);
+  var up = new T.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+  if (up.lengthSq() < 1e-6) up.set(0,1,0); else up.normalize();
   ctl.tgoal.addScaledVector(right, -dx * perPx);
-  ctl.tgoal.y += dy * perPx;
+  ctl.tgoal.addScaledVector(up, dy * perPx);
   ctl.tgoal.x = Math.max(-PAN_XZ, Math.min(PAN_XZ, ctl.tgoal.x));
   ctl.tgoal.z = Math.max(-PAN_XZ, Math.min(PAN_XZ, ctl.tgoal.z));
   ctl.tgoal.y = Math.max(PAN_Y_MIN, Math.min(PAN_Y_MAX, ctl.tgoal.y));
+}
+/* 세로만(월드 Y) 옮기는 패닝 — 회전 한계에 닿은 한 손가락 드래그를 시선 이동으로
+   넘길 때 쓴다. 화면 기준 패닝과 달리 위아래 각도가 극단인 상태에서도 시선이
+   바닥(0)과 천장(4.5) 사이를 그대로 오간다. */
+function panUp(v){
+  ctl.tgoal.y = Math.max(PAN_Y_MIN, Math.min(PAN_Y_MAX, ctl.tgoal.y + v));
 }
 /* 디오라마 실제 크기를 재서 프레임에 맞춘다 */
 var FIT_PTS = (function(){
@@ -3472,10 +3497,14 @@ function fitCamera(){
   var aspect = camera.aspect;
   if (!fitCam) fitCam = new T.PerspectiveCamera(camera.fov, aspect, 0.5, 8000);
   fitCam.aspect = aspect; fitCam.fov = camera.fov; fitCam.updateProjectionMatrix();
+  /* 다시 재는 순간에도 보고 있던 배율은 잃지 않는다 — 아이폰 주소창이 접히며
+     높이가 바뀔 때마다 확대가 기본 구도로 튀어 돌아가던 문제 방지 */
+  var ratio = (ctl.base > 0) ? (ctl.tdist / ctl.base) : 1;
   var d = 60;
   for (var i=0;i<5;i++) d = d * fitExtent(d);
   ctl.base = d;
-  ctl.dist = ctl.base; ctl.tdist = ctl.base;
+  ratio = Math.max(minDist() / d, Math.min(1.5, ratio));
+  ctl.dist = d * ratio; ctl.tdist = d * ratio;
 }
 function applyCamera(){
   var r = ctl.dist;
@@ -3734,7 +3763,8 @@ function anim(t, dt){
 window.APP = {
   T:T, scene:scene, camera:camera, renderer:renderer, world:world, room:room, refs:refs,
   ctl:ctl, applyCamera:applyCamera, resize:resize, anim:anim, S:S, fx:fx, hearts:hearts,
-  panBy:panBy, home:HOME_TARGET, polMin:POL_MIN, polMax:POL_MAX, panYMin:PAN_Y_MIN, panYMax:PAN_Y_MAX,
+  panBy:panBy, panUp:panUp, home:HOME_TARGET, polMin:POL_MIN, polMax:POL_MAX, panYMin:PAN_Y_MIN, panYMax:PAN_Y_MAX,
+  azRange:azRange, minDist:minDist, homeAz:HOME_AZ, homePol:HOME_POL,
   burst:burst, heartPop:heartPop, dotTexture:dotTexture, warmTexture:warmTexture, heartTexture:heartTexture,
   makeDog:makeDog, treeLight:treeLight, pendantLight:pendantLight, lampLight:lampLight,
   fireLight:fireLight, fireLight2:fireLight2, mantelLight:mantelLight, lanternLight:lanternLight,
@@ -3765,8 +3795,9 @@ var A = window.APP, T = A.T;
 var stage = document.getElementById('stage');
 var canvas = document.getElementById('cv');
 var renderer = A.renderer, scene = A.scene, camera = A.camera, ctl = A.ctl;
-var panBy = A.panBy, HOME_TARGET = A.home;   /* 카메라 모듈의 패닝·홈 중심을 이 스코프로 */
+var panBy = A.panBy, panUp = A.panUp, HOME_TARGET = A.home;   /* 카메라 모듈의 패닝·홈 중심을 이 스코프로 */
 var POL_MIN = A.polMin, POL_MAX = A.polMax;  /* 회전 한계 — 넘치는 상하 드래그를 패닝으로 넘길 때 쓴다 */
+var azRange = A.azRange, minDist = A.minDist, HOME_AZ = A.homeAz, HOME_POL = A.homePol;
 var refs = A.refs, S = A.S, room = A.room;
 var fx = A.fx, hearts = A.hearts;
 var tip = document.getElementById('tip');
@@ -4982,15 +5013,16 @@ canvas.addEventListener('pointermove', function(ev){
     var dx = ev.clientX - downPos.x, dy = ev.clientY - downPos.y;
     moved += Math.hypot(dx, dy);            /* 누적 이동량 — 손을 떼도 탭으로 오인하지 않게 */
     if (moved > 3 && !hintEl.classList.contains('gone')) hintEl.classList.add('gone');
-    ctl.taz = Math.max(-0.90, Math.min(1.95, ctl.taz - dx*0.0042));
+    var ar = azRange(ctl.tdist);            /* 확대할수록 좌우로 더 크게 돌 수 있다 */
+    ctl.taz = Math.max(ar[0], Math.min(ar[1], ctl.taz - dx*0.0042));
     var zoomed = ctl.tdist < ctl.base*0.88;
     var wantPol = ctl.tpol - dy*0.0034;
     ctl.tpol = Math.max(POL_MIN, Math.min(POL_MAX, wantPol));
     /* 확대한 상태에서 시선이 위/아래 한계에 닿으면 남은 세로 드래그를 그대로
        시선 이동(패닝)으로 넘긴다 — 한 손가락으로 아래로 쭉 내리면 바닥(y=0)까지
-       이어지고, 위로 올리면 다시 천장 쪽(y=3.6)까지 올라간다. */
+       이어지고, 위로 올리면 다시 천장 쪽(y=4.5)까지 올라간다. */
     if (zoomed && wantPol !== ctl.tpol){
-      panBy(0, (wantPol - ctl.tpol) / 0.0034);
+      panUp((wantPol - ctl.tpol) / 0.0034);
     }
     downPos.x = ev.clientX; downPos.y = ev.clientY;
   } else if (dragMode === 'pan' && n === 1){
@@ -5005,10 +5037,11 @@ canvas.addEventListener('pointermove', function(ev){
     var bx = pointers[ids[1]].x, by = pointers[ids[1]].y;
     var d = Math.hypot(ax-bx, ay-by);
     var mx = (ax+bx)/2, my = (ay+by)/2;
-    /* 핀치 거리 변화로 줌, 두 손가락 중심점 이동으로 시선 이동(패닝)을 동시에
-       세로는 한 손가락과 같은 방향 — 손가락을 아래로 내리면 시점도 바닥 쪽으로 내려간다. */
-    if (lastMid > 0) ctl.tdist = Math.max(ctl.base*0.16, Math.min(ctl.base*1.45, ctl.tdist*(lastMid/d)));
-    if (midPrev.x !== null) panBy(mx - midPrev.x, midPrev.y - my);
+    /* 핀치 거리 변화로 줌, 두 손가락 중심점 이동으로 시선 이동(패닝)을 동시에.
+       두 손가락은 ‘화면을 손으로 집어 옮기는’ 감각 — 가로·세로 모두 손가락을 따라
+       내용이 움직인다(가로는 예전부터 그랬고, 세로만 반대로 가서 어긋나던 것을 맞춤). */
+    if (lastMid > 0) ctl.tdist = Math.max(minDist(), Math.min(ctl.base*1.45, ctl.tdist*(lastMid/d)));
+    if (midPrev.x !== null) panBy(mx - midPrev.x, my - midPrev.y);
     lastMid = d; midPrev.x = mx; midPrev.y = my;
     moved = 99;
   }
@@ -5033,7 +5066,7 @@ canvas.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });   
 canvas.addEventListener('wheel', function(ev){
   ev.preventDefault();
   var k = Math.exp(ev.deltaY * 0.0011);
-  ctl.tdist = Math.max(ctl.base*0.16, Math.min(ctl.base*1.5, ctl.tdist*k));
+  ctl.tdist = Math.max(minDist(), Math.min(ctl.base*1.5, ctl.tdist*k));
 }, {passive:false});
 
 /* 마우스 호버 라벨 */
@@ -5056,9 +5089,26 @@ var TV_FILMS = [
 ];
 var tvFilmAt = 0;
 
+var lastMissTap = 0, lastMissAt = {x:0, y:0};
+/* 기본 구도로 되돌리기 — 어디까지 갔는지 헷갈릴 때 바로 돌아오는 길 */
+function resetView(){
+  ctl.taz = HOME_AZ; ctl.tpol = HOME_POL; ctl.tdist = ctl.base;
+  ctl.tgoal.copy(HOME_TARGET);
+  audio.blip(880, 0.18, 'sine', 0.05);
+  toast('처음 구도로 돌아왔어요', 1600);
+}
 function handleTap(ev){
   var p = pickAt(ev);
-  if (!p) return;
+  if (!p){
+    /* 빈 곳(벽·별밤 배경)을 두 번 톡톡 → 기본 구도로. 오브제가 잡힌 자리에서는
+       그 오브제 동작만 하므로 서로 부딪히지 않는다. */
+    var tn = performance.now();
+    if (tn - lastMissTap < 340 && Math.hypot(ev.clientX-lastMissAt.x, ev.clientY-lastMissAt.y) < 46){
+      lastMissTap = 0; resetView(); return;
+    }
+    lastMissTap = tn; lastMissAt = {x:ev.clientX, y:ev.clientY};
+    return;
+  }
   var k = p.obj.userData.pick;
   audio.click();
   if (k === 'dog') { petDog(); return; }
@@ -5289,12 +5339,17 @@ function frame(now){
   ctl.az   += (ctl.taz - ctl.az) * Math.min(1, dt*7);
   ctl.pol  += (ctl.tpol - ctl.pol) * Math.min(1, dt*7);
   ctl.dist += (ctl.tdist - ctl.dist) * Math.min(1, dt*6);
-  /* 줌아웃해서 전체를 보려 할 때(tdist가 base*0.85보다 멀어질 때)는
-     옮겨 둔 시선 중심을 원래 자리로 서서히 돌려 구도가 어긋나지 않게 한다 */
-  var zoomOut = (ctl.tdist - ctl.base*0.90) / (ctl.base*0.30);
+  /* 줌아웃해서 전체를 보려 할 때는 옮겨 둔 시선 중심을 서서히 돌려 구도가 어긋나지 않게
+     한다 — 단 기본 구도보다 훨씬 멀어졌을 때(1.18배 이상)만, 그리고 아주 천천히.
+     확대해 놓은 시점을 줌아웃 한 번에 빼앗지 않도록 한다. */
+  var zoomOut = (ctl.tdist - ctl.base*1.18) / (ctl.base*0.32);
   if (zoomOut > 0){
-    ctl.tgoal.lerp(HOME_TARGET, Math.min(1, dt*1.6*Math.min(1, zoomOut*1.6)));
+    ctl.tgoal.lerp(HOME_TARGET, Math.min(1, dt*0.85*Math.min(1, zoomOut)));
   }
+  /* 확대해서 넓게 돌다가 다시 멀어지면, 벽 바깥면이 시야를 가리지 않는 각도로 서서히 돌아온다 */
+  var ar = azRange(ctl.tdist);
+  if (ctl.taz < ar[0]) ctl.taz += (ar[0] - ctl.taz) * Math.min(1, dt*2.5);
+  else if (ctl.taz > ar[1]) ctl.taz += (ar[1] - ctl.taz) * Math.min(1, dt*2.5);
   ctl.target.lerp(ctl.tgoal, Math.min(1, dt*8));
   A.applyCamera();
 
