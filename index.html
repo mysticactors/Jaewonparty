@@ -51,6 +51,7 @@
   }
   #cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
   #cv.drag{cursor:grabbing}
+  #cv.pan{cursor:grabbing}
   .vig{position:absolute;inset:0;z-index:2;pointer-events:none;
     background:radial-gradient(115% 78% at 50% 44%,rgba(0,0,0,0) 42%,rgba(5,7,14,.40) 100%),
       linear-gradient(180deg,rgba(6,8,16,.42) 0%,rgba(6,8,16,0) 22%,rgba(6,8,16,0) 58%,rgba(7,9,16,.55) 84%,rgba(7,9,16,.74) 100%)}
@@ -331,9 +332,9 @@
   #invite.out{opacity:0;visibility:hidden}
   .env-layer{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:16px;padding-top:0;pointer-events:none;
-    transition:opacity .48s ease,transform .48s ease}
+    transition:opacity .72s ease,transform .72s cubic-bezier(.4,.02,.3,1)}
   /* 초대장이 다 펼쳐지면 봉투는 살짝 가라앉으며 사라진다 — 열린 덮개가 카드 위로 남지 않게 */
-  #invite.done .env-layer{opacity:0;transform:translateY(14px) scale(.962)}
+  #invite.done .env-layer{opacity:0;transform:translateY(18px) scale(.952)}
   .env-from{margin:0;font-family:var(--ui);font-size:10px;font-weight:400;
     letter-spacing:.28em;text-indent:.28em;color:rgba(255,244,235,.82);text-shadow:0 1px 8px rgba(0,0,0,.55)}
   .env-hint{margin:0;font-family:var(--ui);font-size:10px;font-weight:400;letter-spacing:.06em;
@@ -383,7 +384,9 @@
   .env-flap{position:absolute;left:0;top:0;width:100%;height:56%;z-index:4;
     transform-origin:50% 0;transform:rotateX(0deg);
     filter:drop-shadow(0 1px 0 rgba(190,132,126,.42)) drop-shadow(0 6px 14px rgba(58,28,34,.18));
-    transition:transform .52s cubic-bezier(.42,.06,.24,1)}
+    /* 여유 있는 개봉 — 인장이 먼저 물러난 뒤(.12s) 덮개가 1s에 걸쳐 천천히 젖혀진다.
+       이 곡선은 12%에서 출발해 34% 지점에서 절반을 넘고, 70%에서 94.5%에 이른다. */
+    transition:transform 1s cubic-bezier(.38,.05,.22,1) .12s}
   /* 윗덮개 모서리(윗변 좌우 14px 라운드)는 border-radius+overflow 클립이 아니라
      종이 path 자체에 새겨 iOS 사파리에서도 계단처럼 씹히지 않는다. */
   .env-flap-clip{position:absolute;inset:0;pointer-events:none}
@@ -402,7 +405,7 @@
     background:
       linear-gradient(180deg,rgba(148,92,90,.40) 0%,rgba(148,92,90,.14) 13%,rgba(148,92,90,0) 36%),
       linear-gradient(178deg,#f7e2d5 0%,#f2d7c9 46%,#ead0c2 100%);
-    opacity:0;transition:opacity .26s ease .14s}
+    opacity:0;transition:opacity .46s ease .28s}
   #invite.open .env-flap-paper::after{opacity:1}
   #invite.open .env-flap{transform:rotateX(180deg)}
   /* ── 열린 봉투의 접힘선 마감 ──
@@ -432,7 +435,7 @@
     box-shadow:0 2px 3px rgba(126,58,70,.44),0 1px 0 rgba(255,224,222,.55) inset,
       inset 0 0 0 2px rgba(255,198,198,.20),inset 0 -4px 7px rgba(120,40,58,.40);
     text-shadow:0 -1px 0 rgba(255,220,218,.40),0 1px 1px rgba(102,32,48,.55);
-    transition:opacity .28s ease,transform .28s ease}
+    transition:opacity .45s ease .02s,transform .55s cubic-bezier(.32,.5,.3,1) .02s}
   .env-seal::before{content:"";position:absolute;inset:4px;border-radius:50%;
     box-shadow:inset 0 1px 2px rgba(112,36,52,.55),inset 0 -1px 1px rgba(255,206,206,.30),
       0 1px 0 rgba(255,206,206,.16)}
@@ -442,7 +445,8 @@
   #invite.open .env-seal{opacity:0;transform:translate(-50%,-50%) scale(.55) rotate(-14deg)}
   .iv-letter{position:absolute;left:50%;top:50%;z-index:2;width:min(88vw,330px);
     transform:translate(-50%,calc(-50% + 7vh)) scale(.5);opacity:0;pointer-events:none;
-    transition:transform .65s cubic-bezier(.2,.85,.3,1) .22s,opacity .3s ease .22s}
+    /* 덮개가 거의 다 젖혀질 무렵(.62s) 편지가 1s에 걸쳐 스르륵 올라온다 */
+    transition:transform 1s cubic-bezier(.2,.85,.3,1) .62s,opacity .46s ease .62s}
   #invite.open .iv-letter{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
 
   .invite-card{position:relative;width:100%;padding:22px 22px 18px;text-align:center;
@@ -589,7 +593,7 @@
       </div>
     </header>
 
-    <div class="hint" id="hint"><b></b>끌어서 거실을 둘러보세요<br>오브제를 눌러보면 반응해요</div>
+    <div class="hint" id="hint"><b></b>끌어서 거실을 둘러보세요<br>두 손가락으로 확대·이동(아래로 내리기)<br>오브제를 눌러보면 반응해요</div>
 
     <!-- ── 하단 독 ────────────────────────────── -->
     <nav class="dock" aria-label="파티룸 메뉴">
@@ -2572,18 +2576,23 @@ function makeTiger(){
     refs['fig_' + key] = G;            /* 디버그·검수용 화면 좌표 조회 */
   }
 
-  /* ① 신순록 — 《유미의 세포들 시즌3》 포근한 크림·연블루 니트 + 동그란 안경 + 노트 */
+  /* ① 신순록 — 《유미의 세포들 시즌3》 웜그레이 수트 + 네모 안경 + 노트
+     (원래 크림 니트였는데, 옆의 네이비 정장·버건디 수트와 구분되는 톤의 수트로 교체) */
   (function(){
     var G = new T.Group(); G.position.set(TBLX-0.64, TBLY, TBLZ+0.02); G.rotation.y = 0.22; room.add(G);
-    stand(G); legs(G, '#cfdcec', '#3f4a55'); torso(G, '#eef2fa', '#ffffff');
-    /* 니트 카디건 단추선 */
-    mesh(GEO.box(0.010,0.080,0.004), M('#c8d6e8'), 0, 0.150, 0.044, G);
-    /* 동그란 안경 */
-    [-0.0145,0.0145].forEach(function(sx){
-      var lens = mesh(GEO.cyl(0.0105,0.0105,0.0016,10), M('#4a3b32',{metalness:0.2,roughness:0.4}), sx, 0.248, 0.0375, G);
-      lens.rotation.x = Math.PI/2;
+    stand(G); legs(G, '#7d7469', '#332e2a'); torso(G, '#8b8377', '#f8f3ea', '#4b4038');
+    /* 수트 라펠 — 재킷 깃이 한 줄 보이게 */
+    [-0.013, 0.013].forEach(function(sx){
+      var lap = mesh(GEO.box(0.0075,0.052,0.004), M('#7a7267',{roughness:0.9}), sx, 0.170, 0.0425, G);
+      lap.rotation.z = sx > 0 ? -0.17 : 0.17;
     });
-    mesh(GEO.box(0.009,0.0016,0.0016), M('#4a3b32'), 0, 0.248, 0.0378, G);
+    /* 네모 안경 — 사각 프레임 + 옅은 렌즈 + 다리 */
+    [-0.0145, 0.0145].forEach(function(sx){
+      mesh(GEO.box(0.0218,0.0166,0.0022), M('#3e352e',{metalness:0.25,roughness:0.45}), sx, 0.248, 0.0378, G);
+      mesh(GEO.box(0.0154,0.0104,0.0022), M('#eaf1f3',{metalness:0.05,roughness:0.25}), sx, 0.248, 0.0384, G);
+      mesh(GEO.box(0.0017,0.0022,0.0115), M('#3e352e',{metalness:0.25,roughness:0.45}), sx*1.62, 0.2495, 0.0322, G);
+    });
+    mesh(GEO.box(0.0090,0.0020,0.0018), M('#3e352e'), 0, 0.2483, 0.0384, G);
     head(G, '#4b3a30', 0.246);
     /* 노트를 두 손으로 */
     var nb = mesh(GEO.box(0.052,0.040,0.008), M('#fbf4e6',{roughness:0.9}), 0.004, 0.118, 0.046, G);
@@ -3341,8 +3350,27 @@ function makeDog(scale){
 var ctl = {
   az: 0.60, pol: 1.02, dist: 40, base: 40,
   taz: 0.60, tpol: 1.02, tdist: 40,
-  target: new T.Vector3(0, 2.55, 0.05)
+  target: new T.Vector3(0, 2.55, 0.05),
+  tgoal: new T.Vector3(0, 2.55, 0.05)   /* 패닝으로 옮긴 시선 중심(부드럽게 따라간다) */
 };
+var HOME_TARGET = new T.Vector3(0, 2.55, 0.05);
+var PAN_Y_MIN = 0.35, PAN_Y_MAX = 3.6, PAN_XZ = 3.6;
+/* 확대한 뒤 아래를 보고 싶을 때 시선 중심을 옮긴다(패닝).
+   손가락/마우스로 끈 픽셀만큼 장면이 따라오도록 거리 투영으로 월드 단위를 계산한다 —
+   줌인할수록 같은 픽셀이 작은 거리를 움직여 감도가 자연스러워진다. */
+function panBy(dx, dy){
+  var b = stageBox();
+  var perPx = 2 * ctl.tdist * Math.tan(camera.fov * Math.PI/360) / b.h;
+  camera.updateMatrixWorld();
+  var right = new T.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+  right.y = 0;
+  if (right.lengthSq() > 1e-6) right.normalize(); else right.set(1, 0, 0);
+  ctl.tgoal.addScaledVector(right, -dx * perPx);
+  ctl.tgoal.y += dy * perPx;
+  ctl.tgoal.x = Math.max(-PAN_XZ, Math.min(PAN_XZ, ctl.tgoal.x));
+  ctl.tgoal.z = Math.max(-PAN_XZ, Math.min(PAN_XZ, ctl.tgoal.z));
+  ctl.tgoal.y = Math.max(PAN_Y_MIN, Math.min(PAN_Y_MAX, ctl.tgoal.y));
+}
 /* 디오라마 실제 크기를 재서 프레임에 맞춘다 */
 var FIT_PTS = (function(){
   var pts = [], xs = [-(HALF+0.40), HALF+0.40], zs = [-(HALF+0.40), HALF+0.28], ys = [-1.08, WH+0.16];
@@ -3361,12 +3389,14 @@ var FIT_PTS = (function(){
 })();
 var fitCam = null;
 function fitExtent(d){
+  /* 패닝으로 시선을 옮겨도 기본 구도(프레임 맞춤)는 흔들리지 않도록, 크기 계산은
+     홈 중심 기준으로 한다 */
   fitCam.position.set(
     Math.sin(ctl.az)*Math.sin(ctl.pol)*d,
-    Math.cos(ctl.pol)*d + ctl.target.y,
-    Math.sin(ctl.pol)*Math.cos(ctl.az)*d + ctl.target.z
+    Math.cos(ctl.pol)*d + HOME_TARGET.y,
+    Math.sin(ctl.pol)*Math.cos(ctl.az)*d + HOME_TARGET.z
   );
-  fitCam.lookAt(ctl.target);
+  fitCam.lookAt(HOME_TARGET);
   fitCam.updateMatrixWorld(true);
   var mx = 0, my = 0, v = new T.Vector3();
   for (var i=0;i<FIT_PTS.length;i++){
@@ -4711,6 +4741,7 @@ document.getElementById('btnPhoto').addEventListener('click', function(){ audio.
 
 /* ══════════ 포인터 상호작용 ══════════ */
 var pointers = {}, dragMode = null, downPos = {x:0,y:0}, moved = 0, lastMid = 0;
+var midPrev = {x:null, y:null};   /* 두 손가락 중심점(핀치 패닝 기준) */
 var raycaster = new T.Raycaster(), ndc = new T.Vector2();
 
 function toNDC(ev){
@@ -4750,11 +4781,18 @@ canvas.addEventListener('pointerdown', function(ev){
   pointers[ev.pointerId] = {x:ev.clientX, y:ev.clientY};
   downPos = {x:ev.clientX, y:ev.clientY}; moved = 0;
   var n = Object.keys(pointers).length;
-  if (n === 1){ dragMode = 'cam'; canvas.classList.add('drag'); }
+  if (n === 1){
+    /* 데스크톱: 우클릭 드래그·Shift+드래그는 시선 이동(패닝), 일반 드래그는 회전 */
+    var mousePan = (ev.pointerType === 'mouse' || ev.pointerType === 'pen') && (ev.button === 2 || ev.shiftKey);
+    dragMode = mousePan ? 'pan' : 'cam';
+    canvas.classList.add(mousePan ? 'pan' : 'drag');
+  }
   else if (n === 2){
     dragMode = 'pinch';
     var ids = Object.keys(pointers);
     lastMid = Math.hypot(pointers[ids[0]].x-pointers[ids[1]].x, pointers[ids[0]].y-pointers[ids[1]].y);
+    midPrev.x = (pointers[ids[0]].x+pointers[ids[1]].x)/2;
+    midPrev.y = (pointers[ids[0]].y+pointers[ids[1]].y)/2;
   }
 });
 canvas.addEventListener('pointermove', function(ev){
@@ -4767,11 +4805,23 @@ canvas.addEventListener('pointermove', function(ev){
     ctl.taz = Math.max(-0.90, Math.min(1.95, ctl.taz - (ev.movementX||0)*0.0042));
     ctl.tpol = Math.max(0.30, Math.min(1.44, ctl.tpol - (ev.movementY||0)*0.0034));
     downPos.x = ev.clientX; downPos.y = ev.clientY;
+  } else if (dragMode === 'pan' && n === 1){
+    var pdx = ev.clientX - downPos.x, pdy = ev.clientY - downPos.y;
+    moved = Math.max(moved, Math.hypot(pdx, pdy));
+    if (moved > 3 && !hintEl.classList.contains('gone')) hintEl.classList.add('gone');
+    panBy(pdx, pdy);
+    downPos.x = ev.clientX; downPos.y = ev.clientY;
   } else if (dragMode === 'pinch' && n === 2){
     var ids = Object.keys(pointers);
-    var d = Math.hypot(pointers[ids[0]].x-pointers[ids[1]].x, pointers[ids[0]].y-pointers[ids[1]].y);
+    var ax = pointers[ids[0]].x, ay = pointers[ids[0]].y;
+    var bx = pointers[ids[1]].x, by = pointers[ids[1]].y;
+    var d = Math.hypot(ax-bx, ay-by);
+    var mx = (ax+bx)/2, my = (ay+by)/2;
+    /* 핀치 거리 변화로 줌, 두 손가락 중심점 이동으로 시선 이동(패닝)을 동시에 */
     if (lastMid > 0) ctl.tdist = Math.max(ctl.base*0.16, Math.min(ctl.base*1.45, ctl.tdist*(lastMid/d)));
-    lastMid = d; moved = 99;
+    if (midPrev.x !== null) panBy(mx - midPrev.x, my - midPrev.y);
+    lastMid = d; midPrev.x = mx; midPrev.y = my;
+    moved = 99;
   }
 });
 function endPointer(ev){
@@ -4780,16 +4830,17 @@ function endPointer(ev){
   var n = Object.keys(pointers).length;
   if (n === 0){
     if (was === 'cam' && moved < 7) handleTap(ev);
-    dragMode = null; canvas.classList.remove('drag');
+    dragMode = null; canvas.classList.remove('drag'); canvas.classList.remove('pan');
   } else if (n === 1){
     dragMode = 'cam';
     var ids = Object.keys(pointers);
     downPos = {x:pointers[ids[0]].x, y:pointers[ids[0]].y};
   }
-  lastMid = 0;
+  lastMid = 0; midPrev.x = null; midPrev.y = null;
 }
 canvas.addEventListener('pointerup', endPointer);
 canvas.addEventListener('pointercancel', endPointer);
+canvas.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });   /* 우클릭 패닝용 */
 canvas.addEventListener('wheel', function(ev){
   ev.preventDefault();
   var k = Math.exp(ev.deltaY * 0.0011);
@@ -4938,7 +4989,7 @@ function handleTap(ev){
   }
   if (k === 'mintEnvelope') {
     audio.blip(320, 0.20, 'triangle', 0.05);
-    toast('스피라 링크스(SPIRA LYNX)의 폭로 봉투예요\n《최종면접》의 비밀이 담겨 있어요 ✉️', 3200);
+    toast('스피라 링크스의 봉투…\n어떤 내용이 담겼을까? ✉️', 3200);
     return;
   }
 }
@@ -4958,8 +5009,8 @@ function hideTip(){ clearTimeout(tipTimer); tip.classList.remove('show'); }
 /* ══════════ 초대장 · 편지봉투 모션 ══════════
    접속 시 닫힌 편지봉투가 떠 있고, 봉투를 누르는 첫 제스처에서
    ① 캐롤 <audio>.play()를 동기 호출해 오디오 잠금을 해제하고 (iOS 사파리 대응)
-   ② 왁스 인장이 떨어지며 flap이 rotateX 3D로 위로 열리고 (0.45s)
-   ③ 편지지가 봉투 안에서 위로 쓱 올라와 중앙에 크게 펼쳐진다 (0.65s).
+   ② 왁스 인장이 부드럽게 사라지고 flap이 rotateX 3D로 천천히 위로 열린다 (인장 0.45s · 덮개 1s)
+   ③ 편지지가 봉투 안에서 여유 있게 올라와 중앙에 펼쳐지고 (1s, 0.62s 뒤 출발), 봉투가 서서히 가라앉는다.
    「파티룸 들어가기」를 누르면 초대장이 닫히며 파티룸 진입 — 이때도 캐롤 재생 유지. */
 var invite = document.getElementById('invite');
 var envFlap = document.getElementById('envFlap');
@@ -4978,8 +5029,10 @@ function openEnvelope(){
   invite.classList.add('open');
   document.getElementById('ivLetter').setAttribute('aria-hidden','false');
   document.getElementById('envelope').setAttribute('aria-disabled','true');
-  setTimeout(function(){ envFlap.classList.add('under'); }, 520);  /* 열린 flap을 편지 뒤로 */
-  setTimeout(function(){ invite.classList.add('done'); }, 820);    /* 편지가 펼쳐지면 봉투는 물러남 */
+  /* 덮개 회전(1s, .12s 지연 · cubic-bezier(.38,.05,.22,1))이 절반을 넘는 0.46s 지점에서
+     젖혀진 flap을 봉투 앞면 뒤로 내린다 — 안쪽 안감이 드러나는 순간과 겹친다. */
+  setTimeout(function(){ envFlap.classList.add('under'); }, 460);   /* 열린 flap을 봉투 안쪽으로 */
+  setTimeout(function(){ invite.classList.add('done'); }, 1320);   /* 편지가 다 올라오면 봉투는 서서히 가라앉음 */
 }
 (function(){
   var env = document.getElementById('envelope');
@@ -5011,6 +5064,13 @@ function frame(now){
   ctl.az   += (ctl.taz - ctl.az) * Math.min(1, dt*7);
   ctl.pol  += (ctl.tpol - ctl.pol) * Math.min(1, dt*7);
   ctl.dist += (ctl.tdist - ctl.dist) * Math.min(1, dt*6);
+  /* 줌아웃해서 전체를 보려 할 때(tdist가 base*0.85보다 멀어질 때)는
+     옮겨 둔 시선 중심을 원래 자리로 서서히 돌려 구도가 어긋나지 않게 한다 */
+  var zoomOut = (ctl.tdist - ctl.base*0.85) / (ctl.base*0.35);
+  if (zoomOut > 0){
+    ctl.tgoal.lerp(HOME_TARGET, Math.min(1, dt*1.6*Math.min(1, zoomOut*1.6)));
+  }
+  ctl.target.lerp(ctl.tgoal, Math.min(1, dt*8));
   A.applyCamera();
 
   A.anim(clock, dt);
@@ -5060,7 +5120,7 @@ requestAnimationFrame(function(){
 
 /* 디버그용 */
 window.PARTY = { store:store, render:renderGuestbook, open:openSheet, close:closeSheets, audio:audio,
-  cam:ctl, refs:refs, cam3d:camera,
+  cam:ctl, refs:refs, cam3d:camera, panBy:panBy, home:HOME_TARGET,
   toast:toast, admin:function(){ return adminUnlocked; },
   screenOf:function(k){ var o=refs[k]; if(!o || !o.getWorldPosition) return null;
     var v=new T.Vector3(); o.getWorldPosition(v); v.project(camera);
