@@ -3395,7 +3395,7 @@ function fitExtent(d){
   /* 패닝으로 시선을 옮겨도 기본 구도(프레임 맞춤)는 흔들리지 않도록, 크기 계산은
      홈 중심 기준으로 한다 */
   fitCam.position.set(
-    Math.sin(ctl.az)*Math.sin(ctl.pol)*d,
+    Math.sin(ctl.az)*Math.sin(ctl.pol)*d + HOME_TARGET.x,
     Math.cos(ctl.pol)*d + HOME_TARGET.y,
     Math.sin(ctl.pol)*Math.cos(ctl.az)*d + HOME_TARGET.z
   );
@@ -3421,7 +3421,7 @@ function fitCamera(){
 function applyCamera(){
   var r = ctl.dist;
   camera.position.set(
-    Math.sin(ctl.az)*Math.sin(ctl.pol)*r,
+    Math.sin(ctl.az)*Math.sin(ctl.pol)*r + ctl.target.x,
     Math.cos(ctl.pol)*r + ctl.target.y,
     Math.sin(ctl.pol)*Math.cos(ctl.az)*r + ctl.target.z
   );
