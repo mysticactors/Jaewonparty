@@ -3458,6 +3458,34 @@ function panBy(dx, dy){
 function panUp(v){
   ctl.tgoal.y = Math.max(PAN_Y_MIN, Math.min(PAN_Y_MAX, ctl.tgoal.y + v));
 }
+/* 손가락이 집은(또는 마우스가 가리킨) 화면 지점을 그 자리에 둔 채로 확대·축소한다.
+   거리만 줄이면 시선 중심이 기본 구도(y=2.55, 벽 중간)에 그대로 있어서, 바닥 쪽을
+   집어 확대해도 시선이 위로 솟아 집은 프랍이 화면 아래로 밀려났다. 거리 변화량 dd 에
+   맞춰 시선 중심을 그 지점 쪽으로 같은 비율로 옮겨(같은 픽셀 = dd 만큼의 월드 거리)
+   집은 곳이 손가락 밑에 그대로 남는다. 가로는 카메라 right, 세로는 화면 위쪽인 up. */
+function zoomAt(clientX, clientY, newDist){
+  var d0 = ctl.tdist;
+  var d1 = Math.max(minDist(), Math.min(ctl.base * 1.45, newDist));
+  var dd = d0 - d1;                 /* 줌인하면 +, 줌아웃하면 - */
+  if (Math.abs(dd) < 1e-6){ ctl.tdist = d1; return; }
+  var r = canvas.getBoundingClientRect();
+  var b = stageBox();
+  var w = (r && r.width) || b.w, h = (r && r.height) || b.h;
+  var ox = clientX - (r ? r.left : 0) - w/2;
+  var oy = clientY - (r ? r.top : 0) - h/2;
+  camera.updateMatrixWorld();
+  var right = new T.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+  if (right.lengthSq() > 1e-6) right.normalize(); else right.set(1, 0, 0);
+  var up = new T.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+  if (up.lengthSq() > 1e-6) up.normalize(); else up.set(0, 1, 0);
+  var k = 2 * Math.tan(camera.fov * Math.PI/360) / Math.max(1, h) * dd;
+  ctl.tgoal.addScaledVector(right, ox * k);
+  ctl.tgoal.addScaledVector(up, -oy * k);
+  ctl.tgoal.x = Math.max(-PAN_XZ, Math.min(PAN_XZ, ctl.tgoal.x));
+  ctl.tgoal.z = Math.max(-PAN_XZ, Math.min(PAN_XZ, ctl.tgoal.z));
+  ctl.tgoal.y = Math.max(PAN_Y_MIN, Math.min(PAN_Y_MAX, ctl.tgoal.y));
+  ctl.tdist = d1;
+}
 /* 디오라마 실제 크기를 재서 프레임에 맞춘다 */
 var FIT_PTS = (function(){
   var pts = [], xs = [-(HALF+0.40), HALF+0.40], zs = [-(HALF+0.40), HALF+0.28], ys = [-1.08, WH+0.16];
@@ -3763,7 +3791,7 @@ function anim(t, dt){
 window.APP = {
   T:T, scene:scene, camera:camera, renderer:renderer, world:world, room:room, refs:refs,
   ctl:ctl, applyCamera:applyCamera, resize:resize, anim:anim, S:S, fx:fx, hearts:hearts,
-  panBy:panBy, panUp:panUp, home:HOME_TARGET, polMin:POL_MIN, polMax:POL_MAX, panYMin:PAN_Y_MIN, panYMax:PAN_Y_MAX,
+  panBy:panBy, panUp:panUp, zoomAt:zoomAt, home:HOME_TARGET, polMin:POL_MIN, polMax:POL_MAX, panYMin:PAN_Y_MIN, panYMax:PAN_Y_MAX,
   azRange:azRange, minDist:minDist, homeAz:HOME_AZ, homePol:HOME_POL,
   burst:burst, heartPop:heartPop, dotTexture:dotTexture, warmTexture:warmTexture, heartTexture:heartTexture,
   makeDog:makeDog, treeLight:treeLight, pendantLight:pendantLight, lampLight:lampLight,
@@ -3796,6 +3824,7 @@ var stage = document.getElementById('stage');
 var canvas = document.getElementById('cv');
 var renderer = A.renderer, scene = A.scene, camera = A.camera, ctl = A.ctl;
 var panBy = A.panBy, panUp = A.panUp, HOME_TARGET = A.home;   /* 카메라 모듈의 패닝·홈 중심을 이 스코프로 */
+var zoomAt = A.zoomAt;                                       /* 카메라 모듈의 손가락 지점 기준 줌 */
 var POL_MIN = A.polMin, POL_MAX = A.polMax;  /* 회전 한계 — 넘치는 상하 드래그를 패닝으로 넘길 때 쓴다 */
 var azRange = A.azRange, minDist = A.minDist, HOME_AZ = A.homeAz, HOME_POL = A.homePol;
 var refs = A.refs, S = A.S, room = A.room;
@@ -5040,7 +5069,7 @@ canvas.addEventListener('pointermove', function(ev){
     /* 핀치 거리 변화로 줌, 두 손가락 중심점 이동으로 시선 이동(패닝)을 동시에.
        두 손가락은 ‘화면을 손으로 집어 옮기는’ 감각 — 가로·세로 모두 손가락을 따라
        내용이 움직인다(가로는 예전부터 그랬고, 세로만 반대로 가서 어긋나던 것을 맞춤). */
-    if (lastMid > 0) ctl.tdist = Math.max(minDist(), Math.min(ctl.base*1.45, ctl.tdist*(lastMid/d)));
+    if (lastMid > 0) zoomAt(mx, my, ctl.tdist*(lastMid/d));   /* 두 손가락 중간점을 축으로 확대 */
     if (midPrev.x !== null) panBy(mx - midPrev.x, my - midPrev.y);
     lastMid = d; midPrev.x = mx; midPrev.y = my;
     moved = 99;
@@ -5066,7 +5095,7 @@ canvas.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });   
 canvas.addEventListener('wheel', function(ev){
   ev.preventDefault();
   var k = Math.exp(ev.deltaY * 0.0011);
-  ctl.tdist = Math.max(minDist(), Math.min(ctl.base*1.5, ctl.tdist*k));
+  zoomAt(ev.clientX, ev.clientY, ctl.tdist*k);   /* 커서가 가리킨 곳을 축으로 확대 */
 }, {passive:false});
 
 /* 마우스 호버 라벨 */
