@@ -3523,9 +3523,9 @@ var OUTSIDE = (function(){
     var p = XZ(-3.2, 23.4), cx = p[0], cz = p[1];
     var ry = Math.atan2(-cx,-cz), y0 = gh(cx,cz) - 0.06, H = hz(cx,cz);
     var cs = Math.cos(ry), sn = Math.sin(ry);
-    function put(bk, geo, col, lx,ly,lz, rx,rz){
+    function put(bk, geo, col, lx,ly,lz, rx,rz, ryOff){
       bk.add(geo, col, cx + lx*cs + lz*sn, y0+ly, cz - lx*sn + lz*cs,
-             rx||0, ry, rz||0, 1,1,1, H);
+             rx||0, ry+(ryOff||0), rz||0, 1,1,1, H);
     }
     put(solid, gbox(2.7,3.4,2.7), '#e3d3bd', 0, 1.7, 0);
     put(solid, gbox(2.2,2.1,2.2), '#d8c6ac', 0, 4.45, 0);
@@ -3539,9 +3539,10 @@ var OUTSIDE = (function(){
     put(solid, gbox(0.62,1.10,0.12), '#5a3a22', 0, 0.55, 1.36);
     put(lit,   gbox(0.46,0.09,0.12), '#ffbe74', 0, 1.16, 1.36);
     put(lit,   gbox(0.10,0.36,0.36), '#ffd79b', 1.11, 4.5, 0, 0, 0);
-    put(solid, gcone(1.70, 2.7, 4), '#4b4a5c', 0, 6.9, 0, 0, Math.PI/4);
-    put(solid, gcone(1.80, 0.5, 4), '#eef4ff', 0, 5.66, 0, 0, Math.PI/4);
-    put(solid, gcone(0.24, 0.46, 4), '#f6faff', 0, 8.3, 0, 0, Math.PI/4);
+    /* 지붕·눈 처마·첨탑 — Y축 회전으로만 45도 돌려 4각 모서리를 몸통 모서리에 맞춘다(기울임 없음) */
+    put(solid, gcone(1.70, 2.7, 4), '#4b4a5c', 0, 6.9, 0, 0, 0, Math.PI/4);
+    put(solid, gcone(1.80, 0.5, 4), '#eef4ff', 0, 5.66, 0, 0, 0, Math.PI/4);
+    put(solid, gcone(0.24, 0.46, 4), '#f6faff', 0, 8.3, 0, 0, 0, Math.PI/4);
     put(solid, gbox(2.9,0.36,2.9), '#eaf1fd', 0, -0.06, 0);
   })();
 
