@@ -3314,6 +3314,311 @@ function makeDog(scale){
   }
 })();
 
+/* ══════════ 집 밖 — 눈 쌓인 크리스마스 마을 ══════════ */
+var OUTSIDE = (function(){
+  var G = new T.Group(); G.name = 'outside'; world.add(G);
+
+  var HAZE = new T.Color('#2a2344');       /* 멀리 갈수록 잦아드는 겨울밤 공기색 */
+  var NIGHT = 0.68;                        /* 달빛 아래 — 알베도를 낮춰 밤으로 */
+
+  /* ── 지오메트리 재사용 ───────────────────────────────── */
+  var GC = {};
+  function gbox(w,h,d){ var k='b'+w.toFixed(3)+'_'+h.toFixed(3)+'_'+d.toFixed(3); return GC[k]||(GC[k]=new T.BoxGeometry(w,h,d)); }
+  function gcone(r,h,s){ var k='c'+r.toFixed(3)+'_'+h.toFixed(3)+'_'+s; return GC[k]||(GC[k]=new T.ConeGeometry(r,h,s)); }
+  function gcyl(rt,rb,h,s){ var k='y'+rt.toFixed(3)+'_'+rb.toFixed(3)+'_'+h.toFixed(3)+'_'+s; return GC[k]||(GC[k]=new T.CylinderGeometry(rt,rb,h,s)); }
+  function gsph(r,s){ var k='s'+r.toFixed(3)+'_'+s; return GC[k]||(GC[k]=new T.SphereGeometry(r,s,Math.max(4,s-2))); }
+  function gprism(w,h,t){ var k='p'+w.toFixed(3)+'_'+h.toFixed(3)+'_'+t.toFixed(3); if (GC[k]) return GC[k];
+    var sh = new T.Shape(); sh.moveTo(-w/2,0); sh.lineTo(w/2,0); sh.lineTo(0,h); sh.lineTo(-w/2,0);
+    var g2 = new T.ExtrudeGeometry(sh, {depth:t, bevelEnabled:false}); g2.translate(0,0,-t/2);
+    return (GC[k]=g2); }
+
+  /* ── 조각들을 지오메트리 하나로 굽는다 (드로우 콜 절감) ── */
+  function Baker(dim){ this.pos=[]; this.nrm=[]; this.col=[]; this.dim = dim==null?NIGHT:dim;
+    this._m=new T.Matrix4(); this._q=new T.Quaternion(); this._e=new T.Euler();
+    this._v=new T.Vector3(); this._s=new T.Vector3(); this._c=new T.Color(); }
+  Baker.prototype.add = function(geo, color, x,y,z, rx,ry,rz, sx,sy,sz, haze){
+    var g2 = geo.index ? geo.toNonIndexed() : geo.clone();
+    if (!g2.attributes.normal) g2.computeVertexNormals();
+    this._e.set(rx||0, ry||0, rz||0);
+    this._q.setFromEuler(this._e);
+    this._m.compose(this._v.set(x||0,y||0,z||0), this._q,
+      this._s.set(sx==null?1:sx, sy==null?1:sy, sz==null?1:sz));
+    g2.applyMatrix4(this._m);
+    var p = g2.attributes.position.array, n = g2.attributes.normal.array;
+    this._c.set(color);
+    this._c.r *= this.dim*0.97; this._c.g *= this.dim*0.99; this._c.b *= Math.min(1, this.dim*1.16);
+    if (haze) this._c.lerp(HAZE, haze);
+    for (var i=0;i<p.length;i+=3){
+      this.pos.push(p[i],p[i+1],p[i+2]);
+      this.nrm.push(n[i],n[i+1],n[i+2]);
+      this.col.push(this._c.r, this._c.g, this._c.b);
+    }
+    g2.dispose();
+  };
+  Baker.prototype.mesh = function(mat){
+    var geo = new T.BufferGeometry();
+    geo.setAttribute('position', new T.Float32BufferAttribute(this.pos, 3));
+    geo.setAttribute('normal',   new T.Float32BufferAttribute(this.nrm, 3));
+    geo.setAttribute('color',    new T.Float32BufferAttribute(this.col, 3));
+    geo.computeBoundingSphere();
+    var m = new T.Mesh(geo, mat);
+    m.castShadow = false; m.receiveShadow = false;
+    G.add(m); return m;
+  };
+  var solid = new Baker(NIGHT);        /* 불 꺼진 것 — 달빛을 받는다 */
+  var lit   = new Baker(0.96);         /* 불 켜진 창·전구 — 스스로 빛난다 */
+
+  /* ── 화면 기준 좌표 (a: 오른쪽, d: 안쪽) → 월드 xz ────── */
+  var AX=-0.5646, AZ=-0.8253, RX=0.8253, RZ=-0.5646;
+  function XZ(a,d){ return [ a*RX + d*AX, a*RZ + d*AZ ]; }
+  /* 집 둘레 방위(phi)·거리(r) 로 적은 자리를 화면 기준 (a,d) 로 바꾼다 */
+  function P2AD(p,r){ var x=r*Math.sin(p), z=r*Math.cos(p);
+    return [ 0.8253*x - 0.5646*z, -0.5646*x - 0.8253*z ]; }
+
+  /* ── 지반 높이 ───────────────────────────────────────── */
+  var PADS = [];
+  function baseH(x,z){
+    var r = Math.sqrt(x*x + z*z);
+    var q = Math.max(Math.abs(x), Math.abs(z));
+    var h;
+    if (q <= 5.46) h = -0.26;
+    else { var s = Math.min(1,(q-5.46)/3.4); h = -0.26 - 0.86*s*s; }
+    var t = Math.max(0, Math.min(1,(r-10)/15));            /* 10 → 25 : 완만한 언덕 */
+    h += 0.85 * (t*t*(3-2*t));
+    if (r > 26) h -= Math.pow((r-26)/14, 1.45) * 5.2;      /* 능선 너머로 떨어지는 사면 */
+    var nz = Math.sin(x*0.27)*Math.cos(z*0.24)*0.24 + Math.sin(x*0.63+1.9)*Math.cos(z*0.55-0.8)*0.12;
+    var mask = Math.max(0, Math.min(1,(r-7)/6));
+    return h + nz*mask;
+  }
+  function gh(x,z){
+    var h = baseH(x,z);
+    for (var i=0;i<PADS.length;i++){
+      var P = PADS[i], dx = x-P.x, dz = z-P.z;
+      var d = Math.sqrt(dx*dx+dz*dz);
+      if (d < P.r){ var t = d/P.r; t = t*t*(3-2*t); h = P.h*(1-t) + h*t; }
+    }
+    return h;
+  }
+  function hz(x,z){
+    var r = Math.sqrt(x*x+z*z);
+    var t = Math.max(0, Math.min(1,(r-13)/22));
+    return t*t*(3-2*t) * 0.62;
+  }
+
+  /* ══════════ 눈 지반 ══════════ */
+  (function ground(){
+    /* 네모난 구멍(집)에서 시작해 바깥으로 갈수록 둥글게 퍼지는 링 —
+       모서리 이음매(능선)가 남지 않도록 차수 p 를 16(네모) → 2(원)로 푼다. */
+    var N = 18, M = 84, R0v = 5.44, R1v = 40;
+    var pos = [], col = [], idx = [], start = [];
+    var C1 = new T.Color('#5a6883'), C2 = new T.Color('#4b5873'), c = new T.Color();
+    for (var k=0;k<=N;k++){
+      var s = R0v * Math.pow(R1v/R0v, k/N);
+      var pp = 2 + 14*Math.pow(1 - k/N, 2);
+      var e = 2/pp;
+      start.push(pos.length/3);
+      for (var j=0;j<M;j++){
+        var th = j/M*Math.PI*2, si = Math.sin(th), co = Math.cos(th);
+        var x = s*(si<0?-1:1)*Math.pow(Math.abs(si), e);
+        var z = s*(co<0?-1:1)*Math.pow(Math.abs(co), e);
+        var y = gh(x,z);
+        pos.push(x,y,z);
+        var r2 = Math.sqrt(x*x+z*z);
+        var t = Math.max(0, Math.min(1,(r2-20)/20)); t = t*t*(3-2*t);
+        c.copy(C1).lerp(C2, Math.max(0, Math.min(1,(y+0.9)*0.40)));
+        c.lerp(HAZE, t*0.94);
+        col.push(c.r, c.g, c.b);
+      }
+    }
+    for (var k2=0;k2<N;k2++){
+      var a0 = start[k2], b0 = start[k2+1];
+      for (var j2=0;j2<M;j2++){
+        var n2 = (j2+1)%M;
+        var i0 = a0+j2, i1 = a0+n2, i2 = b0+j2, i3 = b0+n2;
+        idx.push(i0,i2,i1, i1,i2,i3);
+      }
+    }
+    var geo = new T.BufferGeometry();
+    geo.setAttribute('position', new T.Float32BufferAttribute(pos,3));
+    geo.setAttribute('color',    new T.Float32BufferAttribute(col,3));
+    geo.setIndex(idx);
+    geo.computeVertexNormals();
+    var mat = new T.MeshStandardMaterial({vertexColors:true, roughness:1, metalness:0, flatShading:true});
+    var m = new T.Mesh(geo, mat);
+    m.receiveShadow = false; m.castShadow = false; m.name = 'snowGround';
+    G.add(m);
+  })();
+
+  /* ══════════ 집 · 가로등 · 소나무 ══════════ */
+  var HOUSE_IN = [
+    {a:-10.6, d:24.0, w:2.5, dd:2.2, hh:1.9, rh:0.82, wall:'#f0e2cf', roof:'#6d3b3b', turn: 0.20},
+    {a:-6.6,  d:19.6, w:2.3, dd:2.1, hh:1.8, rh:0.80, wall:'#c3d0e0', roof:'#4b4a5c', turn:-0.25},
+    {a:-1.8,  d:18.4, w:2.2, dd:2.0, hh:1.7, rh:0.76, wall:'#dcb0aa', roof:'#5b4133', turn: 0.30},
+    {a: 3.0,  d:21.0, w:2.6, dd:2.3, hh:2.0, rh:0.90, wall:'#e8d7bd', roof:'#3d5150', turn:-0.15},
+    {a: 8.2,  d:23.6, w:2.4, dd:2.1, hh:1.8, rh:0.82, wall:'#b3c1b0', roof:'#6d3b3b', turn: 0.35},
+    {a:12.4,  d:27.0, w:2.2, dd:2.0, hh:1.7, rh:0.76, wall:'#dfc9ad', roof:'#4b4a5c', turn:-0.30},
+    {a:-13.8, d:21.0, w:2.2, dd:2.0, hh:1.7, rh:0.76, wall:'#e8d7bd', roof:'#5b4133', turn: 0.25},
+    {a: 0.4,  d:25.6, w:2.5, dd:2.2, hh:1.9, rh:0.86, wall:'#cfc8b4', roof:'#6d3b3b', turn:-0.35},
+    {a: 6.2,  d:26.4, w:2.3, dd:2.1, hh:1.8, rh:0.80, wall:'#9b5f47', roof:'#4b4a5c', turn: 0.15},
+    {a:-9.0,  d:26.6, w:2.1, dd:1.9, hh:1.7, rh:0.74, wall:'#f0e2cf', roof:'#3d5150', turn:-0.20},
+    /* 좌우 옆쪽 마을 — 카메라를 돌렸을 때도 집들이 이어진다 */
+    {p:2.20, r:23.5, w:2.3, dd:2.1, hh:1.8, rh:0.80, wall:'#dfc9ad', roof:'#4b4a5c', turn: 0.20},
+    {p:2.60, r:19.0, w:2.2, dd:2.0, hh:1.7, rh:0.76, wall:'#c3d0e0', roof:'#6d3b3b', turn:-0.30},
+    {p:3.05, r:25.0, w:2.4, dd:2.2, hh:1.9, rh:0.82, wall:'#b3c1b0', roof:'#5b4133', turn: 0.25},
+    {p:5.15, r:21.0, w:2.2, dd:2.0, hh:1.7, rh:0.76, wall:'#e8d7bd', roof:'#3d5150', turn: 0.30},
+    {p:5.55, r:25.5, w:2.3, dd:2.1, hh:1.8, rh:0.80, wall:'#f0e2cf', roof:'#4b4a5c', turn:-0.20}
+  ];
+  HOUSE_IN.forEach(function(o){ if (o.p != null && o.a == null){ var ad = P2AD(o.p, o.r); o.a = ad[0]; o.d = ad[1]; } });
+
+  function house(o){
+    var p = XZ(o.a,o.d), cx = p[0], cz = p[1];
+    var ry = Math.atan2(-cx,-cz) + (o.turn||0);
+    var w = o.w, dd = o.dd, hh = o.hh, rh = o.rh;
+    var y0 = gh(cx,cz) - 0.05, H = hz(cx,cz);
+    var cs = Math.cos(ry), sn = Math.sin(ry);
+    function put(bk, geo, col, lx,ly,lz, rx,rry,rz, sx,sy,sz){
+      bk.add(geo, col, cx + lx*cs + lz*sn, y0+ly, cz - lx*sn + lz*cs,
+             rx||0, ry+(rry||0), rz||0, sx==null?1:sx, sy==null?1:sy, sz==null?1:sz, H);
+    }
+    /* 몸체 + 처마밑 그림자 */
+    put(solid, gbox(w,hh,dd), o.wall, 0, hh/2, 0);
+    put(solid, gbox(w+0.05, 0.10, dd+0.05), '#9d8f86', 0, hh-0.06, 0);
+    /* 지붕 두 장 + 눈 */
+    var a = Math.atan2(rh, w/2), L = Math.sqrt(w*w/4 + rh*rh) + 0.06;
+    var nx = Math.sin(a)*0.105, ny = Math.cos(a)*0.105;
+    put(solid, gbox(L,0.16,dd+0.34), o.roof, -w/4, hh+rh/2, 0, 0,0, a);
+    put(solid, gbox(L,0.16,dd+0.34), o.roof,  w/4, hh+rh/2, 0, 0,0,-a);
+    put(solid, gbox(L,0.13,dd+0.46), '#e2ebfa', -w/4-nx, hh+rh/2+ny, 0, 0,0, a);
+    put(solid, gbox(L,0.13,dd+0.46), '#e2ebfa',  w/4+nx, hh+rh/2+ny, 0, 0,0,-a);
+    put(solid, gbox(0.26,0.17,dd+0.46), '#eaf2ff', 0, hh+rh+0.02, 0);
+    /* 박공벽 */
+    put(solid, gprism(w*0.985, rh, 0.12), o.wall, 0, hh,  dd/2-0.06);
+    put(solid, gprism(w*0.985, rh, 0.12), o.wall, 0, hh, -dd/2+0.06);
+    /* 굴뚝 */
+    put(solid, gbox(0.30,0.85,0.30), '#7a4a3a', w*0.25, hh+rh*0.78, dd*0.12);
+    put(solid, gbox(0.38,0.11,0.38), '#eef4ff', w*0.25, hh+rh*0.78+0.47, dd*0.12);
+    /* 앞면 창·문 */
+    var wz = dd/2 + 0.01;
+    put(lit,   gbox(0.38,0.48,0.10), o.windowCol||'#ffc97e', -w*0.26, hh*0.60, wz);
+    put(lit,   gbox(0.30,0.40,0.10), '#ffd79b', w*0.27, hh*0.60, wz);
+    put(solid, gbox(0.56,1.02,0.10), '#5a3a22', 0, 0.51, wz);
+    put(lit,   gbox(0.40,0.08,0.10), '#ffc07a', 0, 1.10, wz);
+    /* 옆면 창 */
+    put(lit, gbox(0.10,0.40,0.40), '#ffbe74', w/2+0.01, hh*0.58, 0);
+    if (w > 2.3) put(lit, gbox(0.10,0.36,0.36), '#ffd79b', -w/2-0.01, hh*0.55, 0);
+    /* 뒷면 창 */
+    put(solid, gbox(0.32,0.42,0.10), '#2e3a49', -w*0.24, hh*0.58, -dd/2-0.01);
+    /* 밑동 눈더미 */
+    put(solid, gbox(w+0.20, 0.36, dd+0.20), '#eaf1fd', 0, -0.06, 0);
+    /* 지붕 위 눈더미 */
+    put(solid, gsph(0.32,7), '#f2f7ff', -w*0.18, hh+rh*0.72, dd*0.3, 0,0,0, 1.3,0.5,1.1);
+    return { x:cx, z:cz, y:y0, ry:ry, H:H };
+  }
+
+  var houses = [];
+  for (var hi=0; hi<HOUSE_IN.length; hi++) houses.push(house(HOUSE_IN[hi]));
+
+  /* 마을 중심 — 시계탑 */
+  (function tower(){
+    var p = XZ(-3.2, 23.4), cx = p[0], cz = p[1];
+    var ry = Math.atan2(-cx,-cz), y0 = gh(cx,cz) - 0.06, H = hz(cx,cz);
+    var cs = Math.cos(ry), sn = Math.sin(ry);
+    function put(bk, geo, col, lx,ly,lz, rx,rz){
+      bk.add(geo, col, cx + lx*cs + lz*sn, y0+ly, cz - lx*sn + lz*cs,
+             rx||0, ry, rz||0, 1,1,1, H);
+    }
+    put(solid, gbox(2.7,3.4,2.7), '#e3d3bd', 0, 1.7, 0);
+    put(solid, gbox(2.2,2.1,2.2), '#d8c6ac', 0, 4.45, 0);
+    put(solid, gbox(2.5,0.20,2.5), '#f6faff', 0, 5.55, 0);
+    put(solid, gcyl(0.80,0.80,0.12,18), '#f7ecd8', 0, 4.7, 1.16, Math.PI/2, 0);
+    put(solid, gcyl(0.88,0.88,0.08,18), '#6d3b3b', 0, 4.7, 1.11, Math.PI/2, 0);
+    put(solid, gbox(0.07,0.48,0.10), '#5a3a22', 0, 4.88, 1.24);
+    put(solid, gbox(0.34,0.06,0.10), '#5a3a22', 0.15, 4.7, 1.24, 0, -0.5);
+    put(lit,   gbox(0.28,0.42,0.10), '#ffc97e', -0.80, 2.5, 1.36);
+    put(lit,   gbox(0.28,0.42,0.10), '#ffc97e',  0.80, 2.5, 1.36);
+    put(solid, gbox(0.62,1.10,0.12), '#5a3a22', 0, 0.55, 1.36);
+    put(lit,   gbox(0.46,0.09,0.12), '#ffbe74', 0, 1.16, 1.36);
+    put(lit,   gbox(0.10,0.36,0.36), '#ffd79b', 1.11, 4.5, 0, 0, 0);
+    put(solid, gcone(1.70, 2.7, 4), '#4b4a5c', 0, 6.9, 0, 0, Math.PI/4);
+    put(solid, gcone(1.80, 0.5, 4), '#eef4ff', 0, 5.66, 0, 0, Math.PI/4);
+    put(solid, gcone(0.24, 0.46, 4), '#f6faff', 0, 8.3, 0, 0, Math.PI/4);
+    put(solid, gbox(2.9,0.36,2.9), '#eaf1fd', 0, -0.06, 0);
+  })();
+
+  /* 마을 가로등 */
+  var lampGlows = [];
+  var LAMPS = [[-4.0,11.5],[-1.0,14.5],[1.8,17.6],[4.4,21.0],[7.2,24.6],[-6.6,17.0],[-9.4,20.8]]
+    .concat([P2AD(2.70,16.0), P2AD(5.30,18.0), P2AD(4.70,20.5)]);
+  LAMPS.forEach(function(ld){
+    var p = XZ(ld[0],ld[1]), x = p[0], z = p[1];
+    var y0 = gh(x,z), H = hz(x,z);
+    solid.add(gcyl(0.15,0.21,0.20,6), '#2f2b33', x, y0+0.10, z, 0,0,0, 1,1,1, H);
+    solid.add(gcyl(0.052,0.07,2.8,6), '#33303a', x, y0+1.50, z, 0,0,0, 1,1,1, H);
+    solid.add(gbox(0.28,0.10,0.28), '#2f2b33', x, y0+2.96, z, 0,0,0, 1,1,1, H);
+    lit.add(gbox(0.24,0.32,0.24), '#ffcb87', x, y0+2.78, z, 0,0,0, 1,1,1, H*0.4);
+    solid.add(gcone(0.25,0.21,4), '#2f2b33', x, y0+3.07, z, 0,0.79,0, 1,1,1, H);
+    var spr = new T.Sprite(new T.SpriteMaterial({map:warmTexture, color:0xffb765, transparent:true,
+      opacity:0.50*(1-H*0.9), blending:T.AdditiveBlending, depthWrite:false, fog:false}));
+    spr.scale.set(1.5,1.5,1); spr.position.set(x, y0+2.80, z);
+    G.add(spr); lampGlows.push(spr);
+  });
+
+  /* 눈 쌓인 소나무 */
+  function pine(x,z,s,lit2) {
+    var y0 = gh(x,z), H = hz(x,z);
+    solid.add(gcyl(0.085*s,0.14*s,0.9*s,5), '#4a3527', x, y0+0.45*s, z, 0,0,0, 1,1,1, H);
+    var tier = [[1.00,1.50,1.32],[0.76,1.26,2.20],[0.48,1.06,2.98]];
+    for (var i=0;i<3;i++){
+      var t = tier[i];
+      solid.add(gcone(t[0]*s, t[1]*s, 7), i===1?'#2a6047':'#234f3c', x, y0+(t[2]+t[1]/2)*s, z, 0,0,0, 1,1,1, H);
+      solid.add(gcone(t[0]*s*1.03, t[1]*s*0.32, 7), '#dbe6f8', x, y0+(t[2]+t[1]*0.16)*s, z, 0,0,0, 1,1,1, H);
+    }
+    if (lit2){
+      for (var k=0;k<9;k++){
+        var ang = k*2.1, rr = (0.72 - k*0.055)*s, yy = y0 + (1.12 + k*0.23)*s;
+        lit.add(gbox(0.08,0.08,0.08), k%3===0?'#ffe6b8':(k%3===1?'#ffc07a':'#ffd79b'),
+          x + Math.cos(ang)*rr, yy, z + Math.sin(ang)*rr, 0, 0, 0, 1,1,1, H*0.35);
+      }
+    }
+  }
+  var PINES = [[-9.6,3.6,1.25,0],[8.2,2.4,1.15,0],[-7,9.2,1.15,1],[-10.8,13.2,1.0,0],[0.9,10.0,1.05,0],[5.2,13.0,1.2,1],[9.4,17.6,0.95,0],
+               [-3.2,16.4,1.1,0],[6.8,20.4,1.0,0],[-12.4,19.2,1.05,0],[1.6,24.4,0.9,0],[-2.4,28.6,0.85,0],
+               [10.0,28.0,0.9,0],[11.6,22.0,0.95,0],[-15.2,25.0,0.9,0],[3.8,29.6,0.8,0]]
+    .concat([P2AD(2.40,13.5).concat([1.05,0]), P2AD(3.10,15.5).concat([1.0,0]),
+             P2AD(4.90,15.0).concat([1.1,0]), P2AD(5.45,19.5).concat([0.95,0]),
+             P2AD(2.30,20.0).concat([0.9,0]), P2AD(5.80,14.0).concat([1.0,0])]);
+  PINES.forEach(function(pn){ var p = XZ(pn[0],pn[1]); pine(p[0], p[1], pn[2], pn[3]); });
+
+  /* 눈사람 */
+  function snowman(a,d,s){
+    var p = XZ(a,d), x = p[0], z = p[1], y0 = gh(x,z), H = hz(x,z);
+    function sp(r,col,dy,sc){ solid.add(gsph(r,9), col, x, y0+dy, z, 0,0,0, sc||1, sc||1, sc||1, H); }
+    sp(0.52*s, '#eaf1fd', 0.48*s);
+    sp(0.38*s, '#f0f5ff', 1.10*s);
+    sp(0.28*s, '#f4f8ff', 1.58*s);
+    solid.add(gcone(0.07*s,0.22*s,5), '#d07f35', x, y0+1.60*s, z+0.30*s, Math.PI/2, 0,0, 1,1,1, H);
+    solid.add(gsph(0.035*s,6), '#22222a', x-0.10*s, y0+1.68*s, z+0.24*s, 0,0,0, 1,1,1, H);
+    solid.add(gsph(0.035*s,6), '#22222a', x+0.10*s, y0+1.68*s, z+0.24*s, 0,0,0, 1,1,1, H);
+    solid.add(gcyl(0.30*s,0.30*s,0.10*s,9), '#8f2029', x, y0+1.40*s, z, 0,0,0, 1,1,1, H);
+    solid.add(gcyl(0.19*s,0.21*s,0.24*s,8), '#24242c', x, y0+1.84*s, z, 0,0,0, 1,1,1, H);
+    solid.add(gcyl(0.32*s,0.32*s,0.05*s,8), '#24242c', x, y0+1.74*s, z, 0,0,0, 1,1,1, H);
+  }
+  snowman(-2.6, 9.4, 1.0);
+  snowman(3.6, 16.0, 0.9);
+
+  /* 구운 메시 등록 */
+  solid.mesh(new T.MeshStandardMaterial({vertexColors:true, roughness:0.97, metalness:0, flatShading:true}));
+  lit.mesh(new T.MeshBasicMaterial({vertexColors:true}));
+
+  /* 마을을 비추는 따뜻한 등불 하나 */
+  var vp = XZ(-2.0, 23.0);
+  var villageLight = new T.PointLight(0xffb066, 0.95, 40, 2.0);
+  villageLight.position.set(vp[0], gh(vp[0],vp[1]) + 4.0, vp[1]);
+  G.add(villageLight);
+
+  return { group:G, glow:lampGlows, light:villageLight, gh:gh, XZ:XZ };
+})();
+
 /* ══════════ 하늘 ══════════ */
 (function sky(){
   var bg = new T.Mesh(new T.PlaneGeometry(200, 300),
@@ -3337,7 +3642,8 @@ function makeDog(scale){
   refs.starsB = starField(150, 1.05, 0.7, 0xd5e2ff, -6, 26, -90, -230, 120);
 
   /* 달 */
-  var moon = new T.Group(); moon.position.set(-7.6, 12.8, -78); skyRig.add(moon);
+  /* 마을 지붕 위로 떠오르게 — 눈 지반이 생겨 낮게 있으면 능선에 가린다 */
+  var moon = new T.Group(); moon.position.set(2.6, 15.2, -78); skyRig.add(moon);
   var moonTex = (function(){
     var c = mkCanvas(256,256), g = c.getContext('2d');
     g.fillStyle = '#f7f0d4'; g.fillRect(0,0,256,256);
