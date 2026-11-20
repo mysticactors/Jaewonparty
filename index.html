@@ -3458,6 +3458,15 @@ function panBy(dx, dy){
 function panUp(v){
   ctl.tgoal.y = Math.max(PAN_Y_MIN, Math.min(PAN_Y_MAX, ctl.tgoal.y + v));
 }
+/* 화면 픽셀 단위의 세로 드래그를 월드 거리로 환산해 panUp 에 넘긴다.
+   panUp 은 월드 미터(y 0~4.5)를 받으므로 픽셀을 그대로 더하면 안 된다 — 몇 픽셀만
+   남아도 화면이 천장/바닥까지 훅 튄다. panBy 와 같은 거리 투영(화면 픽셀 1개가 그
+   거리에서 차지하는 월드 길이)으로 바꿔 손가락 이동량에 1:1 로 따라가게 한다. */
+function panUpPx(px){
+  var b = stageBox();
+  var perPx = 2 * ctl.tdist * Math.tan(camera.fov * Math.PI/360) / b.h;
+  panUp(px * perPx);
+}
 /* 손가락이 집은(또는 마우스가 가리킨) 화면 지점을 그 자리에 둔 채로 확대·축소한다.
    거리만 줄이면 시선 중심이 기본 구도(y=2.55, 벽 중간)에 그대로 있어서, 바닥 쪽을
    집어 확대해도 시선이 위로 솟아 집은 프랍이 화면 아래로 밀려났다. 거리 변화량 dd 에
@@ -3791,7 +3800,7 @@ function anim(t, dt){
 window.APP = {
   T:T, scene:scene, camera:camera, renderer:renderer, world:world, room:room, refs:refs,
   ctl:ctl, applyCamera:applyCamera, resize:resize, anim:anim, S:S, fx:fx, hearts:hearts,
-  panBy:panBy, panUp:panUp, zoomAt:zoomAt, home:HOME_TARGET, polMin:POL_MIN, polMax:POL_MAX, panYMin:PAN_Y_MIN, panYMax:PAN_Y_MAX,
+  panBy:panBy, panUp:panUp, panUpPx:panUpPx, zoomAt:zoomAt, home:HOME_TARGET, polMin:POL_MIN, polMax:POL_MAX, panYMin:PAN_Y_MIN, panYMax:PAN_Y_MAX,
   azRange:azRange, minDist:minDist, homeAz:HOME_AZ, homePol:HOME_POL,
   burst:burst, heartPop:heartPop, dotTexture:dotTexture, warmTexture:warmTexture, heartTexture:heartTexture,
   makeDog:makeDog, treeLight:treeLight, pendantLight:pendantLight, lampLight:lampLight,
@@ -3823,7 +3832,7 @@ var A = window.APP, T = A.T;
 var stage = document.getElementById('stage');
 var canvas = document.getElementById('cv');
 var renderer = A.renderer, scene = A.scene, camera = A.camera, ctl = A.ctl;
-var panBy = A.panBy, panUp = A.panUp, HOME_TARGET = A.home;   /* 카메라 모듈의 패닝·홈 중심을 이 스코프로 */
+var panBy = A.panBy, panUp = A.panUp, panUpPx = A.panUpPx, HOME_TARGET = A.home;   /* 카메라 모듈의 패닝·홈 중심을 이 스코프로 */
 var zoomAt = A.zoomAt;                                       /* 카메라 모듈의 손가락 지점 기준 줌 */
 var POL_MIN = A.polMin, POL_MAX = A.polMax;  /* 회전 한계 — 넘치는 상하 드래그를 패닝으로 넘길 때 쓴다 */
 var azRange = A.azRange, minDist = A.minDist, HOME_AZ = A.homeAz, HOME_POL = A.homePol;
@@ -5043,15 +5052,19 @@ canvas.addEventListener('pointermove', function(ev){
     moved += Math.hypot(dx, dy);            /* 누적 이동량 — 손을 떼도 탭으로 오인하지 않게 */
     if (moved > 3 && !hintEl.classList.contains('gone')) hintEl.classList.add('gone');
     var ar = azRange(ctl.tdist);            /* 확대할수록 좌우로 더 크게 돌 수 있다 */
-    ctl.taz = Math.max(ar[0], Math.min(ar[1], ctl.taz - dx*0.0042));
+    ctl.taz = Math.max(ar[0], Math.min(ar[1], ctl.taz - dx*0.0032));
     var zoomed = ctl.tdist < ctl.base*0.88;
-    var wantPol = ctl.tpol - dy*0.0034;
+    var wantPol = ctl.tpol - dy*0.0026;
     ctl.tpol = Math.max(POL_MIN, Math.min(POL_MAX, wantPol));
     /* 확대한 상태에서 시선이 위/아래 한계에 닿으면 남은 세로 드래그를 그대로
        시선 이동(패닝)으로 넘긴다 — 한 손가락으로 아래로 쭉 내리면 바닥(y=0)까지
-       이어지고, 위로 올리면 다시 천장 쪽(y=4.5)까지 올라간다. */
+       이어지고, 위로 올리면 다시 천장 쪽(y=4.5)까지 올라간다.
+       남은 양은 픽셀 단위(각도 ÷ POL_RATE)라서, panUp 이 받는 월드 미터로 환산해
+       넘겨야 한다(panUpPx) — 픽셀을 그대로 더하던 때는 몇 픽셀만 남아도 tgoal.y 가
+       0~4.5 를 한 번에 건너뛰어 화면이 천장/바닥까지 훅 튀었다. */
+    var POL_RATE = 0.0026;
     if (zoomed && wantPol !== ctl.tpol){
-      panUp((wantPol - ctl.tpol) / 0.0034);
+      panUpPx((wantPol - ctl.tpol) / POL_RATE);
     }
     downPos.x = ev.clientX; downPos.y = ev.clientY;
   } else if (dragMode === 'pan' && n === 1){
@@ -5365,8 +5378,8 @@ var clock = 0, last = performance.now();
 function frame(now){
   var dt = Math.min(0.05, (now-last)/1000); last = now; clock += dt;
 
-  ctl.az   += (ctl.taz - ctl.az) * Math.min(1, dt*7);
-  ctl.pol  += (ctl.tpol - ctl.pol) * Math.min(1, dt*7);
+  ctl.az   += (ctl.taz - ctl.az) * Math.min(1, dt*6);
+  ctl.pol  += (ctl.tpol - ctl.pol) * Math.min(1, dt*6);
   ctl.dist += (ctl.tdist - ctl.dist) * Math.min(1, dt*6);
   /* 줌아웃해서 전체를 보려 할 때는 옮겨 둔 시선 중심을 서서히 돌려 구도가 어긋나지 않게
      한다 — 단 기본 구도보다 훨씬 멀어졌을 때(1.18배 이상)만, 그리고 아주 천천히.
